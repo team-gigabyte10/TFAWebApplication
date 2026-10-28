@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110" width="60" height="66">
+  <!-- Mercantile Bank 4 Pillars Emblem -->
+  <!-- Left Green Pillars -->
+  <g fill="#008d36">
+    <!-- Pillar 1 -->
+    <rect x="10" y="10" width="15" height="90" rx="7.5" ry="7.5" />
+    <!-- Pillar 2 -->
+    <rect x="32" y="10" width="15" height="90" rx="7.5" ry="7.5" />
+    <!-- Bottom connection -->
+    <path d="M 10 75 Q 28 82 47 75 L 47 88 Q 28 95 10 88 Z" opacity="0.15" />
+  </g>
+  
+  <!-- Right Blue Pillars -->
+  <g fill="#003399">
+    <!-- Pillar 3 -->
+    <rect x="54" y="10" width="15" height="90" rx="7.5" ry="7.5" />
+    <!-- Pillar 4 -->
+    <rect x="76" y="10" width="15" height="90" rx="7.5" ry="7.5" />
+    <!-- Bottom connection -->
+    <path d="M 54 75 Q 72 82 91 75 L 91 88 Q 72 95 54 88 Z" opacity="0.15" />
+  </g>
+</svg>

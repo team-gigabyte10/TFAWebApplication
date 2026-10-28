@@ -1,0 +1,769 @@
+/* ==========================================================================
+   TFAWebApplication - Enterprise Banking UI Theme & Admin Panel
+   Trade Finance Analytics (TFA) - Mercantile Bank PLC.
+   Powered by CSL Software Resources Ltd.
+   ========================================================================== */
+
+:root {
+  /* Palette Tokens */
+  --mbl-navy: #0b2f8a;
+  --mbl-navy-dark: #071f5c;
+  --mbl-navy-light: #1545b5;
+  --mbl-royal-blue: #003399;
+  --mbl-active-blue: #2563eb;
+  --mbl-green: #008d36;
+  --mbl-green-dark: #00702b;
+  --nav-green: #009668;
+  --nav-green-hover: #008058;
+  --nav-red: #b81424;
+  --nav-red-hover: #9c101e;
+  --nav-top-blue: #003380;
+  
+  /* Modern Dark Sidebar Tokens (Matching Reference Image) */
+  --sidebar-bg: #16192e;
+  --sidebar-border: #1f243d;
+  --sidebar-text: #8e9ab7;
+  --sidebar-text-hover: #ffffff;
+  --sidebar-active-bg: #232a48;
+  --sidebar-section-title: #5a6486;
+
+  --workspace-border: #0b2f8a;
+  --footer-bg: #eceff1;
+  --text-primary: #1e293b;
+  --text-muted: #64748b;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-bangla: 'Hind Siliguri', 'Kalpurush', 'SolaimanLipi', sans-serif;
+}
+
+/* Base Resets & Global Styles */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  background-color: #f4f6fa;
+  color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+/* ==========================================================================
+   Top Header & Multi-Tier Navigation (Continuous Angle Alignment)
+   ========================================================================== */
+.tfa-app-header {
+  background-color: #ffffff;
+  width: 100%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  position: relative;
+  z-index: 100;
+}
+
+.tfa-header-main {
+  display: flex;
+  align-items: stretch;
+  min-height: 74px;
+  background-color: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Left Brand Block */
+.tfa-brand-container {
+  display: flex;
+  align-items: center;
+  background-color: #ffffff;
+  padding: 6px 20px 6px 14px;
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  width: 220px;
+}
+
+.tfa-brand-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.tfa-logo-img {
+  height: 48px;
+  width: auto;
+  display: block;
+}
+
+/* Multi-Tier Right Column with UNIFIED Continuous Diagonal Cut */
+.tfa-nav-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+  flex-grow: 1;
+  position: relative;
+  margin-left: -48px; /* Overlaps brand container cleanly */
+  clip-path: polygon(48px 0, 100% 0, 100% 100%, 0 100%); /* Single unbroken continuous diagonal cut */
+  z-index: 5;
+}
+
+/* Tier 1: Very Top Strip (Dark Blue with Bank Name) */
+.tfa-tier-top {
+  background-color: var(--nav-top-blue);
+  color: #ffffff;
+  padding: 2px 20px 2px 30px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  min-height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.tfa-bank-title {
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Tier 2: Middle Green Bar (Main Navigation) */
+.tfa-tier-green {
+  background-color: var(--nav-green);
+  padding: 0 16px 0 24px;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.tfa-nav-links {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 8px;
+}
+
+.tfa-nav-links .nav-link {
+  color: #ffffff !important;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 3px 14px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tfa-nav-links .nav-link:hover,
+.tfa-nav-links .nav-link:focus,
+.tfa-nav-links .nav-link.show {
+  background-color: var(--nav-green-hover);
+  color: #ffffff !important;
+  box-shadow: inset 0 -2px 0 rgba(255, 255, 255, 0.4);
+}
+
+.tfa-nav-links .dropdown-menu {
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  font-size: 13px;
+  padding: 6px 0;
+  margin-top: 4px;
+  animation: fadeInDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tfa-nav-links .dropdown-item {
+  padding: 8px 18px;
+  font-weight: 500;
+  transition: background 0.15s ease;
+}
+
+.tfa-nav-links .dropdown-item:hover {
+  background-color: #f1f5f9;
+  color: var(--nav-green);
+}
+
+/* Tier 3: Bottom Red Bar (User Profile) */
+.tfa-tier-red {
+  background-color: var(--nav-red);
+  padding: 0 16px 0 20px;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.tfa-user-btn {
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 2px 10px;
+  border-radius: 3px;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tfa-user-btn:hover {
+  background-color: var(--nav-red-hover);
+  color: #ffffff;
+}
+
+.tfa-user-btn::after {
+  display: none;
+}
+
+.tfa-user-icon-circle {
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==========================================================================
+   Application Body Layout (Sidebar + Workspace)
+   ========================================================================== */
+.tfa-app-layout {
+  display: flex;
+  align-items: stretch;
+  min-height: calc(100vh - 74px);
+  padding: 10px 14px 10px 10px;
+  gap: 12px;
+}
+
+/* ==========================================================================
+   Modern Dark Side Navbar (Matching Reference Image)
+   ========================================================================== */
+.tfa-admin-sidebar.modern-dark-sidebar {
+  width: 230px;
+  flex-shrink: 0;
+  background-color: var(--sidebar-bg);
+  border: 1px solid var(--sidebar-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(10, 15, 30, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  user-select: none;
+  min-height: calc(100vh - 96px);
+}
+
+/* Sidebar Brand Header: "Admin Panel" */
+.sidebar-header {
+  padding: 24px 20px 16px 20px;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-brand-title {
+  font-size: 18.5px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.sidebar-brand-title:hover {
+  color: #60a5fa;
+}
+
+/* Scrollable Navigation Container */
+.sidebar-nav-container {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 6px 0 20px 0;
+}
+
+.sidebar-nav-container::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar-nav-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-nav-container::-webkit-scrollbar-thumb {
+  background: #252b49;
+  border-radius: 2px;
+}
+
+/* Section Header Titles (MAIN, REPORTS, ADMIN) */
+.sidebar-group {
+  margin-bottom: 12px;
+}
+
+.sidebar-section-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+  color: var(--sidebar-section-title);
+  padding: 12px 20px 6px 20px;
+}
+
+/* Sidebar Nav Item (Sleek Pill Style Matching Reference Image) */
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  padding: 9px 14px;
+  margin: 2px 10px;
+  border-radius: 7px;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: all 0.16s ease;
+  cursor: pointer;
+}
+
+.sidebar-nav-item:hover {
+  color: var(--sidebar-text-hover);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Active State Pill (Matching Reference Image) */
+.sidebar-nav-item.active {
+  color: #ffffff;
+  background-color: var(--sidebar-active-bg);
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-nav-item.active .nav-icon {
+  color: #38bdf8;
+}
+
+.nav-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  margin-right: 12px;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.nav-icon {
+  color: #7986a7;
+  transition: color 0.16s ease;
+}
+
+.sidebar-nav-item:hover .nav-icon {
+  color: #ffffff;
+}
+
+.nav-text {
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   Main Workspace Container & Tab Window
+   ========================================================================== */
+.tfa-workspace-wrapper {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-width: 0;
+}
+
+.tfa-window-frame {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Tab Header Strip */
+.tfa-tab-header {
+  display: flex;
+  align-items: flex-end;
+  position: relative;
+  z-index: 2;
+  margin-left: 8px;
+  gap: 4px;
+}
+
+.tfa-tab {
+  background-color: #334155;
+  color: #cbd5e1;
+  padding: 6px 20px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: 6px 6px 0 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.tfa-tab:hover {
+  background-color: #475569;
+  color: #ffffff;
+}
+
+.tfa-tab.active {
+  background-color: var(--mbl-navy);
+  color: #ffffff;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.08);
+}
+
+/* Window Canvas Body */
+.tfa-canvas-body {
+  flex-grow: 1;
+  background-color: #ffffff;
+  border: 1.5px solid var(--workspace-border);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  position: relative;
+  min-height: 540px;
+}
+
+/* ==========================================================================
+   Modern Admin Dashboard Styles (Matching Reference Image)
+   ========================================================================== */
+.dashboard-view-content {
+  flex-grow: 1;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.dashboard-title {
+  font-size: 22px;
+  letter-spacing: -0.3px;
+}
+
+.dashboard-title-bar {
+  width: 32px;
+  height: 3px;
+  background-color: #6366f1;
+  border-radius: 2px;
+  margin-top: 4px;
+}
+
+.dashboard-btn-add {
+  background-color: #6366f1 !important;
+  border-color: #6366f1 !important;
+  font-weight: 600;
+}
+
+.dashboard-btn-add:hover {
+  background-color: #4f46e5 !important;
+  border-color: #4f46e5 !important;
+}
+
+/* Stat Cards */
+.stat-card {
+  border-radius: 10px;
+  background-color: #ffffff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  border-left: 4px solid transparent !important;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06) !important;
+}
+
+.stat-card-purple {
+  border-left-color: #8b5cf6 !important;
+}
+
+.stat-card-blue {
+  border-left-color: #0ea5e9 !important;
+}
+
+.stat-card-teal {
+  border-left-color: #14b8a6 !important;
+}
+
+.stat-card-orange {
+  border-left-color: #f59e0b !important;
+}
+
+.stat-value {
+  font-size: 26px;
+  letter-spacing: -0.5px;
+}
+
+.stat-label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.stat-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.stat-icon-purple {
+  background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.25);
+}
+
+.stat-icon-blue {
+  background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+  box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);
+}
+
+.stat-icon-teal {
+  background: linear-gradient(135deg, #2dd4bf 0%, #0d9488 100%);
+  box-shadow: 0 4px 10px rgba(13, 148, 136, 0.25);
+}
+
+.stat-icon-orange {
+  background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+  box-shadow: 0 4px 10px rgba(217, 119, 6, 0.25);
+}
+
+.stat-trend {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.trend-up {
+  color: #10b981;
+}
+
+.trend-down {
+  color: #f43f5e;
+}
+
+/* Recent Orders Section */
+.recent-orders-card {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.recent-orders-icon-badge {
+  color: #8b5cf6;
+  font-size: 18px;
+}
+
+.recent-orders-table thead th {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 12px 16px;
+}
+
+.recent-orders-table tbody td {
+  padding: 13px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.status-completed {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+.status-pending {
+  background-color: #fffbeb;
+  color: #d97706;
+}
+
+.status-cancelled {
+  background-color: #fef2f2;
+  color: #e11d48;
+}
+
+.btn-action {
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.btn-action:hover {
+  background-color: #6366f1;
+  border-color: #6366f1;
+  color: #ffffff;
+}
+
+/* Portal View Branding Presentation */
+.portal-view-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.tfa-canvas-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
+  user-select: none;
+}
+
+.tfa-central-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.tfa-hero-logo-wrapper {
+  max-width: 580px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tfa-hero-brand-img {
+  max-height: 220px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.04));
+}
+
+.tfa-frame-footer {
+  background-color: var(--footer-bg);
+  border-top: 1px solid #d5dbdb;
+  color: #374151;
+  text-align: center;
+  padding: 8px 16px;
+  font-size: 13px;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+.tfa-frame-footer strong {
+  color: #111827;
+}
+
+/* Quick Search Modal */
+.tfa-search-modal .modal-content {
+  border-radius: 8px;
+  border: 1.5px solid var(--mbl-navy);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.tfa-search-header {
+  background: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 12px 18px;
+}
+
+.tfa-search-input-wrap {
+  position: relative;
+}
+
+.tfa-search-input-wrap i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  font-size: 16px;
+}
+
+.tfa-search-input {
+  padding-left: 42px;
+  border-radius: 6px;
+  border: 1.5px solid #cbd5e1;
+  font-size: 14px;
+  height: 44px;
+}
+
+.tfa-search-input:focus {
+  border-color: var(--mbl-navy);
+  box-shadow: 0 0 0 3px rgba(11, 47, 138, 0.15);
+}
+
+.tfa-search-result-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 5px;
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: all 0.15s ease;
+  margin-bottom: 4px;
+}
+
+.tfa-search-result-item:hover {
+  background-color: #e2e8f0;
+  color: var(--mbl-navy);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   Responsive Adaptations
+   ========================================================================== */
+@media (max-width: 992px) {
+  .tfa-header-main {
+    flex-wrap: wrap;
+  }
+  .tfa-nav-column {
+    width: 100%;
+    margin-left: 0;
+    clip-path: none;
+  }
+  .tfa-brand-container {
+    width: 100%;
+  }
+  .tfa-tier-top, .tfa-tier-green, .tfa-tier-red {
+    padding-left: 14px;
+  }
+  .tfa-app-layout {
+    flex-direction: column;
+    padding: 8px;
+  }
+  .tfa-admin-sidebar.modern-dark-sidebar {
+    width: 100%;
+    min-height: auto;
+  }
+}

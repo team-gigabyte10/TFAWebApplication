@@ -1,0 +1,245 @@
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<!-- Main Window Frame -->
+<div class="tfa-window-frame">
+    <!-- Tab Navigation Bar -->
+    <div class="tfa-tab-header">
+        <div class="tfa-tab active" id="tabDashboard" data-target="#viewDashboard" title="Dashboard">
+            <i class="bi bi-pie-chart-fill me-1"></i>
+            <span>Dashboard</span>
+        </div>
+        <div class="tfa-tab" id="tabHome" data-target="#viewHome" title="Mercantile Bank Portal">
+            <i class="bi bi-bank me-1"></i>
+            <span>Home</span>
+        </div>
+    </div>
+
+    <!-- Inner Window Canvas -->
+    <div class="tfa-canvas-body">
+        <!-- ================================================================= -->
+        <!-- VIEW 1: Modern Admin Dashboard (Matching Reference Image)        -->
+        <!-- ================================================================= -->
+        <div class="dashboard-view-content p-4" id="viewDashboard">
+            <!-- Dashboard Top Action Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                <div>
+                    <h3 class="fw-bold mb-1 text-dark dashboard-title">Dashboard</h3>
+                    <div class="dashboard-title-bar"></div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2 px-3 rounded-2 shadow-sm bg-white">
+                        <i class="bi bi-download"></i>
+                        <span>Export</span>
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm d-flex align-items-center gap-2 px-3 rounded-2 shadow-sm dashboard-btn-add">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Add New</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4 Metric KPI Cards (Matching Exact Image Layout & Accents) -->
+            <div class="row g-4 mb-4">
+                <!-- Card 1: Total Users -->
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card stat-card-purple border-0 shadow-sm h-100">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h2 class="stat-value mb-1 fw-bold text-dark">1,504</h2>
+                                    <span class="stat-label text-muted small">Total Users</span>
+                                </div>
+                                <div class="stat-icon-wrap stat-icon-purple">
+                                    <i class="bi bi-people-fill"></i>
+                                </div>
+                            </div>
+                            <div class="stat-trend trend-up small">
+                                <i class="bi bi-arrow-up-short"></i>
+                                <span>12.5% from last month</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Total Revenue -->
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card stat-card-blue border-0 shadow-sm h-100">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h2 class="stat-value mb-1 fw-bold text-dark">$12,750</h2>
+                                    <span class="stat-label text-muted small">Total Revenue</span>
+                                </div>
+                                <div class="stat-icon-wrap stat-icon-blue">
+                                    <i class="bi bi-currency-dollar"></i>
+                                </div>
+                            </div>
+                            <div class="stat-trend trend-up small">
+                                <i class="bi bi-arrow-up-short"></i>
+                                <span>8.2% from last month</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Total Orders -->
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card stat-card-teal border-0 shadow-sm h-100">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h2 class="stat-value mb-1 fw-bold text-dark">324</h2>
+                                    <span class="stat-label text-muted small">Total Orders</span>
+                                </div>
+                                <div class="stat-icon-wrap stat-icon-teal">
+                                    <i class="bi bi-cart-fill"></i>
+                                </div>
+                            </div>
+                            <div class="stat-trend trend-down small">
+                                <i class="bi bi-arrow-down-short"></i>
+                                <span>3.1% from last month</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Conversion Rate -->
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card stat-card-orange border-0 shadow-sm h-100">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h2 class="stat-value mb-1 fw-bold text-dark">85%</h2>
+                                    <span class="stat-label text-muted small">Conversion Rate</span>
+                                </div>
+                                <div class="stat-icon-wrap stat-icon-orange">
+                                    <i class="bi bi-graph-up"></i>
+                                </div>
+                            </div>
+                            <div class="stat-trend trend-up small">
+                                <i class="bi bi-arrow-up-short"></i>
+                                <span>4.6% from last month</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Orders Section (Matching Reference Image) -->
+            <div class="card border-0 shadow-sm rounded-3 recent-orders-card">
+                <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="recent-orders-icon-badge">
+                            <i class="bi bi-bag-check-fill text-purple"></i>
+                        </span>
+                        <h5 class="fw-bold mb-0 text-dark">Recent Orders</h5>
+                    </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1 rounded-2 px-3 py-1">
+                        <i class="bi bi-eye"></i>
+                        <span>View All</span>
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table align-middle table-hover mb-0 recent-orders-table">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th class="text-end pe-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="ps-4 fw-semibold text-dark">#ORD-001</td>
+                                    <td>John Smith</td>
+                                    <td class="text-muted">15 Mar 2025</td>
+                                    <td class="fw-semibold text-dark">$125.00</td>
+                                    <td><span class="badge-status status-completed"><i class="bi bi-check-circle-fill me-1"></i>Completed</span></td>
+                                    <td class="text-end pe-4">
+                                        <button class="btn btn-sm btn-outline-primary btn-action py-1 px-3">
+                                            <i class="bi bi-eye me-1"></i>View
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="ps-4 fw-semibold text-dark">#ORD-002</td>
+                                    <td>Emma Johnson</td>
+                                    <td class="text-muted">14 Mar 2025</td>
+                                    <td class="fw-semibold text-dark">$245.99</td>
+                                    <td><span class="badge-status status-pending"><i class="bi bi-clock-fill me-1"></i>Pending</span></td>
+                                    <td class="text-end pe-4">
+                                        <button class="btn btn-sm btn-outline-primary btn-action py-1 px-3">
+                                            <i class="bi bi-eye me-1"></i>View
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="ps-4 fw-semibold text-dark">#ORD-003</td>
+                                    <td>Michael Brown</td>
+                                    <td class="text-muted">13 Mar 2025</td>
+                                    <td class="fw-semibold text-dark">$79.50</td>
+                                    <td><span class="badge-status status-completed"><i class="bi bi-check-circle-fill me-1"></i>Completed</span></td>
+                                    <td class="text-end pe-4">
+                                        <button class="btn btn-sm btn-outline-primary btn-action py-1 px-3">
+                                            <i class="bi bi-eye me-1"></i>View
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="ps-4 fw-semibold text-dark">#ORD-004</td>
+                                    <td>Sarah Davis</td>
+                                    <td class="text-muted">12 Mar 2025</td>
+                                    <td class="fw-semibold text-dark">$350.00</td>
+                                    <td><span class="badge-status status-cancelled"><i class="bi bi-x-circle-fill me-1"></i>Cancelled</span></td>
+                                    <td class="text-end pe-4">
+                                        <button class="btn btn-sm btn-outline-primary btn-action py-1 px-3">
+                                            <i class="bi bi-eye me-1"></i>View
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="ps-4 fw-semibold text-dark">#ORD-005</td>
+                                    <td>David Wilson</td>
+                                    <td class="text-muted">11 Mar 2025</td>
+                                    <td class="fw-semibold text-dark">$185.25</td>
+                                    <td><span class="badge-status status-completed"><i class="bi bi-check-circle-fill me-1"></i>Completed</span></td>
+                                    <td class="text-end pe-4">
+                                        <button class="btn btn-sm btn-outline-primary btn-action py-1 px-3">
+                                            <i class="bi bi-eye me-1"></i>View
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- VIEW 2: Mercantile Bank Official Portal View                      -->
+        <!-- ================================================================= -->
+        <div class="portal-view-content d-none" id="viewHome">
+            <div class="tfa-canvas-content">
+                <div class="tfa-central-brand">
+                    <div class="tfa-hero-logo-wrapper">
+                        <img src="~/images/mbl-banglar-bank-logo.png" 
+                             alt="Mercantile Bank PLC - বাংলার ব্যাংক" 
+                             class="tfa-hero-brand-img img-fluid" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Embedded Workspace Footer -->
+            <div class="tfa-frame-footer">
+                Powered by <strong>CSL Software Resources Ltd.</strong>
+            </div>
+        </div>
+    </div>
+</div>

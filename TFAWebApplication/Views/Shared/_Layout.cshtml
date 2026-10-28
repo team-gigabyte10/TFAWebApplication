@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - TFA Trade Finance Analytics | Mercantile Bank PLC.</title>
+    
+    <!-- Google Fonts: Inter & Hind Siliguri (Bengali) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <!-- Top Enterprise Header with Aligned Continuous Diagonal Cut -->
+    <header class="tfa-app-header">
+        <div class="tfa-header-main">
+            <!-- Brand Monogram Block -->
+            <div class="tfa-brand-container">
+                <a asp-controller="Home" asp-action="Index" class="tfa-brand-link" title="Trade Finance Analytics">
+                    <img src="~/images/tfa-logo.svg" alt="TFA Trade Finance Analytics" class="tfa-logo-img" />
+                </a>
+            </div>
+
+            <!-- Multi-Tier Navigation Header (Continuous Diagonal Boundary) -->
+            <div class="tfa-nav-column">
+                <!-- Tier 1: Very Top Strip (Dark Blue with Bank Name) -->
+                <div class="tfa-tier-top">
+                    <span class="tfa-bank-title">Mercantile Bank PLC.</span>
+                </div>
+
+                <!-- Tier 2: Middle Green Bar (Main Navigation) -->
+                <div class="tfa-tier-green">
+                    <ul class="nav tfa-nav-links">
+                        <!-- System Manager Dropdown -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navDropSystemManager" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                System Manager
+                            </a>
+                            <ul class="dropdown-menu shadow" aria-labelledby="navDropSystemManager">
+                                <li><h6 class="dropdown-header text-uppercase text-secondary fw-bold" style="font-size: 11px;">System Setup & Access</h6></li>
+                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#userProfileModal"><i class="bi bi-people-fill me-2 text-primary"></i>User Management</a></li>
+                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#securityModal"><i class="bi bi-shield-lock-fill me-2 text-primary"></i>Role &amp; Permission Matrix</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-building me-2 text-primary"></i>Branch Setup</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><h6 class="dropdown-header text-uppercase text-secondary fw-bold" style="font-size: 11px;">Audit &amp; Logs</h6></li>
+                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="bi bi-sliders me-2 text-primary"></i>System Parameter Config</a></li>
+                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#securityModal"><i class="bi bi-journal-text me-2 text-primary"></i>Security Audit Trail</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- Trade Finance Management Dropdown -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navDropTradeFinance" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Trade Finance Management
+                            </a>
+                            <ul class="dropdown-menu shadow" aria-labelledby="navDropTradeFinance">
+                                <li><h6 class="dropdown-header text-uppercase text-secondary fw-bold" style="font-size: 11px;">Trade Operations</h6></li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-text-fill me-2 text-success"></i>Letter of Credit (LC) - Import / Export</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-shield-check me-2 text-success"></i>Bank Guarantee (BG) Management</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-cash-stack me-2 text-success"></i>Foreign &amp; Local Bills Discounting</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-box-arrow-in-down-right me-2 text-success"></i>Inward / Outward Remittance</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><h6 class="dropdown-header text-uppercase text-secondary fw-bold" style="font-size: 11px;">Messaging &amp; Reports</h6></li>
+                                <li><a class="dropdown-item" asp-controller="Reports" asp-action="Index"><i class="bi bi-file-earmark-bar-graph-fill me-2 text-success"></i>Trade Analytics &amp; RDLC Reports</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Tier 3: Bottom Red Bar (User Profile) -->
+                <div class="tfa-tier-red">
+                    <div class="dropdown tfa-user-dropdown">
+                        <a class="tfa-user-btn dropdown-toggle" href="#" id="navDropUser" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="tfa-user-name">Mis (App Admin)</span>
+                            <span class="tfa-user-icon-circle ms-1">
+                                <i class="bi bi-person-fill"></i>
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="navDropUser">
+                            <li class="px-3 py-2 border-bottom bg-light">
+                                <div class="fw-bold text-dark">MIS (App Admin)</div>
+                                <small class="text-muted d-block">Mercantile Bank Head Office</small>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle mt-1" style="font-size: 10px;">Authenticated Session</span>
+                            </li>
+                            <li><a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#userProfileModal"><i class="bi bi-person-badge me-2 text-danger"></i>User Profile</a></li>
+                            <li><a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#changePassModal"><i class="bi bi-key-fill me-2 text-danger"></i>Change Password</a></li>
+                            <li><a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#notificationsModal"><i class="bi bi-bell-fill me-2 text-danger"></i>Notifications</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item py-2 text-danger fw-semibold" href="#"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Application Body Layout -->
+    <div class="tfa-app-layout">
+        <!-- Modern Dark Admin Dashboard Sidebar (Matching Reference Image) -->
+        <aside class="tfa-admin-sidebar modern-dark-sidebar" id="adminSidebar">
+            <!-- Sidebar Header: "Admin Panel" -->
+            <div class="sidebar-header">
+                <a asp-controller="Home" asp-action="Index" class="sidebar-brand-title">
+                    Admin Panel
+                </a>
+            </div>
+
+            <!-- Navigation Container -->
+            <div class="sidebar-nav-container">
+                <!-- Group 1: MAIN -->
+                <div class="sidebar-group">
+                    <div class="sidebar-section-title">MAIN</div>
+                    
+                    <!-- Dashboard (Active) -->
+                    <a href="javascript:void(0)" class="sidebar-nav-item active" data-section="dashboard" id="menuDashboard">
+                        <span class="nav-icon-wrap"><i class="bi bi-pie-chart-fill nav-icon"></i></span>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+
+                    <!-- Users -->
+                    <a href="javascript:void(0)" class="sidebar-nav-item" data-section="users" id="menuUsers">
+                        <span class="nav-icon-wrap"><i class="bi bi-people-fill nav-icon"></i></span>
+                        <span class="nav-text">Users</span>
+                    </a>
+
+                    <!-- Products -->
+                    <a href="javascript:void(0)" class="sidebar-nav-item" data-section="products" id="menuProducts">
+                        <span class="nav-icon-wrap"><i class="bi bi-box-seam-fill nav-icon"></i></span>
+                        <span class="nav-text">Products</span>
+                    </a>
+
+                    <!-- Orders -->
+                    <a href="javascript:void(0)" class="sidebar-nav-item" data-section="orders" id="menuOrders">
+                        <span class="nav-icon-wrap"><i class="bi bi-cart-fill nav-icon"></i></span>
+                        <span class="nav-text">Orders</span>
+                    </a>
+                </div>
+
+                <!-- Group 2: REPORTS -->
+                <div class="sidebar-group">
+                    <div class="sidebar-section-title">REPORTS</div>
+
+                    <!-- Trade Reports (RDLC) -->
+                    <a asp-controller="Reports" asp-action="Index" class="sidebar-nav-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Reports" ? "active" : "")" id="menuTradeReports">
+                        <span class="nav-icon-wrap"><i class="bi bi-file-earmark-bar-graph-fill nav-icon"></i></span>
+                        <span class="nav-text">Trade Reports (RDLC)</span>
+                    </a>
+
+                    <!-- Analytics -->
+                    <a href="javascript:void(0)" class="sidebar-nav-item" data-section="analytics" id="menuAnalytics">
+                        <span class="nav-icon-wrap"><i class="bi bi-graph-up-arrow nav-icon"></i></span>
+                        <span class="nav-text">Analytics</span>
+                    </a>
+
+                    <!-- Sales -->
+                    <a href="javascript:void(0)" class="sidebar-nav-item" data-section="sales" id="menuSales">
+                        <span class="nav-icon-wrap"><i class="bi bi-cash-coin nav-icon"></i></span>
+                        <span class="nav-text">Sales</span>
+                    </a>
+                </div>
+
+                <!-- Group 3: ADMIN -->
+                <div class="sidebar-group">
+                    <div class="sidebar-section-title">ADMIN</div>
+
+                    <!-- Settings -->
+                    <a href="javascript:void(0)" class="sidebar-nav-item" data-section="settings" id="menuSettings">
+                        <span class="nav-icon-wrap"><i class="bi bi-gear-fill nav-icon"></i></span>
+                        <span class="nav-text">Settings</span>
+                    </a>
+
+                    <!-- Notifications -->
+                    <a href="javascript:void(0)" class="sidebar-nav-item" data-section="notifications" id="menuNotifications">
+                        <span class="nav-icon-wrap"><i class="bi bi-bell-fill nav-icon"></i></span>
+                        <span class="nav-text">Notifications</span>
+                    </a>
+
+                    <!-- Security -->
+                    <a href="javascript:void(0)" class="sidebar-nav-item" data-section="security" id="menuSecurity">
+                        <span class="nav-icon-wrap"><i class="bi bi-shield-lock-fill nav-icon"></i></span>
+                        <span class="nav-text">Security</span>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace Area -->
+        <main class="tfa-workspace-wrapper" role="main">
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- INTERACTIVE MODALS                                                      -->
+    <!-- ======================================================================= -->
+
+    <!-- Quick Search Modal -->
+    <div class="modal fade tfa-search-modal" id="quickSearchModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="tfa-search-header">
+                    <div class="tfa-search-input-wrap">
+                        <i class="bi bi-search"></i>
+                        <input type="text" id="txtQuickSearch" class="form-control tfa-search-input" placeholder="Search Trade Finance Menus, LC Numbers, BG References, or System Tools..." autocomplete="off">
+                    </div>
+                </div>
+                <div class="modal-body p-3" style="max-height: 420px; overflow-y: auto;">
+                    <div class="text-uppercase text-secondary fw-bold mb-2 ps-1" style="font-size: 11px;">Quick Navigation &amp; Modules</div>
+                    <div class="tfa-search-results-list">
+                        <a href="#" class="tfa-search-result-item">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-file-earmark-text text-success fs-5"></i>
+                                <div>
+                                    <div class="fw-semibold">Letter of Credit (LC) - Import &amp; Export</div>
+                                    <small class="text-muted">Trade Finance Management &gt; Operations &gt; LC Issuance</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-light text-dark border">Open</span>
+                        </a>
+                        <a href="#" class="tfa-search-result-item">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-shield-check text-success fs-5"></i>
+                                <div>
+                                    <div class="fw-semibold">Bank Guarantee (BG) Issuance &amp; Amendment</div>
+                                    <small class="text-muted">Trade Finance Management &gt; Guarantees &gt; BG Maintenance</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-light text-dark border">Open</span>
+                        </a>
+                        <a href="#" class="tfa-search-result-item">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-broadcast-pin text-primary fs-5"></i>
+                                <div>
+                                    <div class="fw-semibold">SWIFT Message Engine (MT700 / MT760)</div>
+                                    <small class="text-muted">Trade Finance Management &gt; SWIFT Interfacing</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-light text-dark border">Open</span>
+                        </a>
+                        <a href="#" class="tfa-search-result-item">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-people text-primary fs-5"></i>
+                                <div>
+                                    <div class="fw-semibold">User Access &amp; Role Management</div>
+                                    <small class="text-muted">System Manager &gt; Security &gt; User Matrix</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-light text-dark border">Open</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="modal-footer py-2 px-3 bg-light justify-content-between">
+                    <small class="text-muted"><kbd class="bg-secondary text-white">ESC</kbd> to close &bull; <kbd class="bg-secondary text-white">Ctrl + K</kbd> to trigger search</small>
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Profile Modal -->
+    <div class="modal fade" id="userProfileModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white py-2">
+                    <h6 class="modal-title mb-0 d-flex align-items-center gap-2"><i class="bi bi-person-circle"></i> User Profile &amp; Credential Details</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center pb-3 border-bottom mb-3">
+                        <div class="bg-danger-subtle text-danger rounded-circle d-inline-flex align-items-center justify-content-center p-3 mb-2" style="width: 64px; height: 64px;">
+                            <i class="bi bi-person-fill fs-2"></i>
+                        </div>
+                        <h5 class="mb-0">Mis (App Admin)</h5>
+                        <span class="badge bg-danger mt-1">Super Administrator</span>
+                    </div>
+                    <div class="row g-2 small">
+                        <div class="col-5 text-muted">User ID:</div>
+                        <div class="col-7 fw-semibold">MIS_APP_ADMIN</div>
+                        <div class="col-5 text-muted">Organization:</div>
+                        <div class="col-7 fw-semibold">Mercantile Bank PLC.</div>
+                        <div class="col-5 text-muted">Branch / Dept:</div>
+                        <div class="col-7 fw-semibold">MIS Division, Head Office</div>
+                        <div class="col-5 text-muted">Application:</div>
+                        <div class="col-7 fw-semibold">TFA - Trade Finance Analytics</div>
+                        <div class="col-5 text-muted">Software Partner:</div>
+                        <div class="col-7 fw-semibold">CSL Software Resources Ltd.</div>
+                    </div>
+                </div>
+                <div class="modal-footer py-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white py-2">
+                    <h6 class="modal-title mb-0 d-flex align-items-center gap-2"><i class="bi bi-gear-fill"></i> System Settings &amp; Configuration</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded bg-light">
+                                <h6 class="fw-bold mb-2 text-primary"><i class="bi bi-sliders me-1"></i> System Variables</h6>
+                                <p class="small text-muted mb-2">Configure core banking environment parameters and system date.</p>
+                                <span class="badge bg-primary">Active</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded bg-light">
+                                <h6 class="fw-bold mb-2 text-success"><i class="bi bi-calendar-event me-1"></i> Financial Year</h6>
+                                <p class="small text-muted mb-2">Government &amp; Institutional fiscal periods setup.</p>
+                                <span class="badge bg-success">FY 2025-2026</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded bg-light">
+                                <h6 class="fw-bold mb-2 text-warning"><i class="bi bi-envelope-at me-1"></i> Mail &amp; Alerts</h6>
+                                <p class="small text-muted mb-2">SMTP server and notification gateway routing.</p>
+                                <span class="badge bg-warning text-dark">Configured</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded bg-light">
+                                <h6 class="fw-bold mb-2 text-info"><i class="bi bi-geo-alt me-1"></i> Country &amp; Port</h6>
+                                <p class="small text-muted mb-2">Global country ISO codes and port directory.</p>
+                                <span class="badge bg-info text-dark">Up-to-Date</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer py-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div class="modal fade" id="notificationsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white py-2">
+                    <h6 class="modal-title mb-0 d-flex align-items-center gap-2"><i class="bi bi-bell-fill"></i> System Notifications</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="list-group list-group-flush small">
+                        <div class="list-group-item list-group-item-action py-3">
+                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                <h6 class="mb-1 fw-bold text-primary"><i class="bi bi-broadcast me-1"></i> SWIFT MT700 Received</h6>
+                                <small class="text-muted">10 mins ago</small>
+                            </div>
+                            <p class="mb-1 text-secondary">Export LC Document #LC-2025-8849 confirmed from HSBC London.</p>
+                        </div>
+                        <div class="list-group-item list-group-item-action py-3">
+                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                <h6 class="mb-1 fw-bold text-success"><i class="bi bi-shield-check me-1"></i> BG Issued</h6>
+                                <small class="text-muted">1 hour ago</small>
+                            </div>
+                            <p class="mb-1 text-secondary">Performance Guarantee BG-0994 approved for Principal Branch.</p>
+                        </div>
+                        <div class="list-group-item list-group-item-action py-3">
+                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                <h6 class="mb-1 fw-bold text-warning"><i class="bi bi-exclamation-triangle me-1"></i> Security Alert</h6>
+                                <small class="text-muted">3 hours ago</small>
+                            </div>
+                            <p class="mb-1 text-secondary">Admin session renewed from authorized workstation IP 192.168.10.45.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer py-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Modal -->
+    <div class="modal fade" id="securityModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white py-2">
+                    <h6 class="modal-title mb-0 d-flex align-items-center gap-2"><i class="bi bi-shield-lock-fill"></i> Enterprise Security Controls</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded text-center bg-light">
+                                <i class="bi bi-person-check-fill fs-2 text-success mb-2 d-block"></i>
+                                <h6 class="fw-bold mb-1">Session Security</h6>
+                                <small class="text-muted d-block mb-2">Single Sign-On &amp; 2FA</small>
+                                <span class="badge bg-success">Enforced</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded text-center bg-light">
+                                <i class="bi bi-router-fill fs-2 text-primary mb-2 d-block"></i>
+                                <h6 class="fw-bold mb-1">IP Whitelisting</h6>
+                                <small class="text-muted d-block mb-2">Intranet Subnet Access</small>
+                                <span class="badge bg-primary">Active</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded text-center bg-light">
+                                <i class="bi bi-journal-check fs-2 text-info mb-2 d-block"></i>
+                                <h6 class="fw-bold mb-1">Audit Trail</h6>
+                                <small class="text-muted d-block mb-2">Immutable Transaction Logs</small>
+                                <span class="badge bg-info text-dark">Logging</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer py-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal fade" id="changePassModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white py-2">
+                    <h6 class="modal-title mb-0 d-flex align-items-center gap-2"><i class="bi bi-key-fill"></i> Change Security PIN / Password</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="frmChangePass">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Current Password</label>
+                            <input type="password" class="form-control form-control-sm" placeholder="Enter current password" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">New Password</label>
+                            <input type="password" class="form-control form-control-sm" placeholder="Enter new password (min. 8 characters)" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Confirm New Password</label>
+                            <input type="password" class="form-control form-control-sm" placeholder="Confirm new password" required />
+                        </div>
+                        <div class="alert alert-info py-2 small mb-0">
+                            <i class="bi bi-info-circle me-1"></i> Password must contain at least 1 uppercase letter, 1 number, and 1 special symbol.
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer py-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="alert('Password change request submitted successfully!'); bootstrap.Modal.getInstance(document.getElementById('changePassModal')).hide();">Update Password</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery & Bootstrap 5 Scripts -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

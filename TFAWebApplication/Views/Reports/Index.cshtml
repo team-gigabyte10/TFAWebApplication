@@ -1,0 +1,282 @@
+@model TFAWebApplication.Models.Reports.LcAdvisingFilterViewModel
+@{
+    ViewData["Title"] = "LC Advising Register Report (PBL)";
+    var currentBranch = Model.BranchFilter ?? "All";
+    var currentCurrency = Model.CurrencyFilter ?? "All";
+    var currentStatus = Model.StatusFilter ?? "All";
+    var fromDateStr = Model.FromDate.ToString("yyyy-MM-dd");
+    var toDateStr = Model.ToDate.ToString("yyyy-MM-dd");
+    
+    var previewUrl = Url.Action("PreviewPdf", "Reports", new { 
+        fromDate = fromDateStr, 
+        toDate = toDateStr, 
+        branch = currentBranch, 
+        currency = currentCurrency, 
+        status = currentStatus 
+    });
+}
+
+<!-- Main Window Frame -->
+<div class="tfa-window-frame">
+    <!-- Tab Navigation Bar -->
+    <div class="tfa-tab-header">
+        <div class="tfa-tab active" id="tabRdlcReport" title="RDLC Trade Finance Report">
+            <i class="bi bi-file-earmark-bar-graph-fill me-1 text-primary"></i>
+            <span>LC Advising Register (PBL)</span>
+        </div>
+        <a asp-controller="Home" asp-action="Index" class="tfa-tab text-decoration-none" title="Back to Dashboard">
+            <i class="bi bi-arrow-left me-1"></i>
+            <span>Back to Dashboard</span>
+        </a>
+    </div>
+
+    <!-- Inner Window Canvas -->
+    <div class="tfa-canvas-body">
+        <div class="p-4">
+            <!-- Top Action Header -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom gap-3">
+                <div>
+                    <h3 class="fw-bold mb-0 text-dark">Export LC Advising Register (PBL)</h3>
+                </div>
+
+                <!-- Export & Action Buttons -->
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <button type="button" class="btn btn-outline-dark btn-sm d-flex align-items-center gap-2 px-3 rounded-2 shadow-sm bg-white" onclick="printReportIframe()">
+                        <i class="bi bi-printer-fill text-secondary"></i>
+                        <span>Print</span>
+                    </button>
+                    <a id="btnExportExcel" href="@Url.Action("Export", "Reports", new { format = "EXCEL", fromDate = fromDateStr, toDate = toDateStr, branch = currentBranch, currency = currentCurrency, status = currentStatus })" class="btn btn-success btn-sm d-flex align-items-center gap-2 px-3 rounded-2 shadow-sm position-relative">
+                        <i class="bi bi-file-earmark-excel-fill"></i>
+                        <span>Export Excel (XLSX)</span>
+                        <span class="badge bg-white text-success ms-1 small" style="font-size: 10px;">Full 80-Col</span>
+                    </a>
+                    <a id="btnExportPdf" href="@Url.Action("Export", "Reports", new { format = "PDF", fromDate = fromDateStr, toDate = toDateStr, branch = currentBranch, currency = currentCurrency, status = currentStatus })" class="btn btn-danger btn-sm d-flex align-items-center gap-2 px-3 rounded-2 shadow-sm">
+                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                        <span>Export PDF</span>
+                    </a>
+                    <a id="btnExportWord" href="@Url.Action("Export", "Reports", new { format = "WORD", fromDate = fromDateStr, toDate = toDateStr, branch = currentBranch, currency = currentCurrency, status = currentStatus })" class="btn btn-primary btn-sm d-flex align-items-center gap-2 px-3 rounded-2 shadow-sm">
+                        <i class="bi bi-file-earmark-word-fill"></i>
+                        <span>Export Word</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filter Toolbar Card with Date Range & Controls -->
+            <div class="card border-0 shadow-sm rounded-3 mb-4 bg-light">
+                <div class="card-body p-3">
+                    <form method="get" id="filterForm" class="row g-3 align-items-end" onsubmit="applyFilters(event)">
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <label class="form-label small fw-semibold text-secondary mb-1">
+                                <i class="bi bi-calendar-event me-1"></i>From Date
+                            </label>
+                            <input type="date" name="fromDate" id="inputFromDate" value="@fromDateStr" class="form-control form-control-sm bg-white" />
+                        </div>
+
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <label class="form-label small fw-semibold text-secondary mb-1">
+                                <i class="bi bi-calendar-event me-1"></i>To Date
+                            </label>
+                            <input type="date" name="toDate" id="inputToDate" value="@toDateStr" class="form-control form-control-sm bg-white" />
+                        </div>
+
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <label class="form-label small fw-semibold text-secondary mb-1">AD Branch</label>
+                            <select name="branch" id="selectBranch" class="form-select form-select-sm bg-white">
+                                <option value="All" selected="@(currentBranch == "All")">All AD Branches</option>
+                                <option value="Principal" selected="@(currentBranch == "Principal")">Principal AD Branch (0101)</option>
+                                <option value="Agrabad" selected="@(currentBranch == "Agrabad")">Agrabad AD Branch (0204)</option>
+                                <option value="Gulshan" selected="@(currentBranch == "Gulshan")">Gulshan AD Branch (0308)</option>
+                                <option value="Motijheel" selected="@(currentBranch == "Motijheel")">Motijheel AD Branch (0105)</option>
+                            </select>
+                        </div>
+
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <label class="form-label small fw-semibold text-secondary mb-1">Currency</label>
+                            <select name="currency" id="selectCurrency" class="form-select form-select-sm bg-white">
+                                <option value="All" selected="@(currentCurrency == "All")">All Currencies</option>
+                                <option value="USD" selected="@(currentCurrency == "USD")">USD - US Dollar</option>
+                                <option value="EUR" selected="@(currentCurrency == "EUR")">EUR - Euro</option>
+                                <option value="GBP" selected="@(currentCurrency == "GBP")">GBP - British Pound</option>
+                            </select>
+                        </div>
+
+                        <div class="col-lg-3 col-md-8 col-sm-12 d-flex gap-2 justify-content-md-end flex-wrap">
+                            <button type="submit" id="btnApplyFilters" class="btn btn-primary btn-sm px-3 d-flex align-items-center gap-1 shadow-sm">
+                                <i class="bi bi-funnel-fill"></i>
+                                <span>Apply Filters</span>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm px-3 d-flex align-items-center gap-1 bg-white" onclick="resetFilters()">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                                <span>Reset</span>
+                            </button>
+                        </div>
+
+                        <!-- Date Preset Quick Buttons -->
+                        <div class="col-12 pt-1 border-top mt-2 d-flex gap-2 align-items-center flex-wrap">
+                            <span class="text-muted small fw-semibold me-1"><i class="bi bi-lightning-charge me-1"></i>Presets:</span>
+                            <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2 rounded-pill small fw-semibold" onclick="setPresetToToday()">Today</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2 rounded-pill small" onclick="setPreset('2026-01-01', '2026-12-31')">Full Year 2026</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2 rounded-pill small" onclick="setPreset('2025-01-01', '2026-12-31')">2025 - 2026</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2 rounded-pill small" onclick="setPreset('2024-01-01', '2026-12-31')">2024 - 2026</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2 rounded-pill small" onclick="setPreset('2020-01-01', '2026-12-31')">All Time (2020-2026)</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- RDLC Viewer Container -->
+            <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                <div class="card-header bg-white border-bottom py-2 px-3 d-flex flex-wrap justify-content-end align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="reloadPreview()" title="Reload Preview">
+                            <i class="bi bi-arrow-repeat me-1"></i>Reload
+                        </button>
+                        <a id="btnNewTab" href="@previewUrl" target="_blank" class="btn btn-sm btn-outline-primary" title="Open Fullscreen in New Window">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>New Tab
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body p-0 bg-secondary-subtle position-relative" style="min-height: 720px;">
+                    <!-- Loading Spinner Overlay -->
+                    <div id="previewLoader" class="position-absolute top-50 start-50 translate-middle text-center p-4 bg-white rounded-3 shadow-sm border" style="z-index: 5;">
+                        <div class="spinner-border text-primary mb-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div class="fw-semibold text-dark small">Generating LC Advising Register...</div>
+                        <div class="text-muted" style="font-size: 11px;">Rendering report output...</div>
+                    </div>
+
+                    <!-- PDF Viewer Container -->
+                    <div id="containerPdfView" class="w-100 h-100">
+                        <iframe id="reportIframe" 
+                                src="@previewUrl" 
+                                class="w-100 border-0" 
+                                style="height: 750px; display: block;" 
+                                onload="onReportIframeLoaded()">
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function hideLoader() {
+            var loader = document.getElementById('previewLoader');
+            if (loader) {
+                loader.style.display = 'none';
+            }
+        }
+
+        function showLoader() {
+            var loader = document.getElementById('previewLoader');
+            if (loader) {
+                loader.style.display = 'block';
+            }
+        }
+
+        function onReportIframeLoaded() {
+            hideLoader();
+        }
+
+        function applyFilters(e) {
+            if (e && e.preventDefault) {
+                e.preventDefault();
+            }
+
+            showLoader();
+
+            var fromDate = document.getElementById('inputFromDate').value;
+            var toDate = document.getElementById('inputToDate').value;
+            var branch = document.getElementById('selectBranch').value;
+            var currency = document.getElementById('selectCurrency').value;
+
+            var basePreviewUrl = '@Url.Action("PreviewPdf", "Reports")';
+            var baseExportUrl = '@Url.Action("Export", "Reports")';
+            var baseIndexUrl = '@Url.Action("Index", "Reports")';
+
+            var params = new URLSearchParams({
+                fromDate: fromDate,
+                toDate: toDate,
+                branch: branch,
+                currency: currency,
+                status: 'All'
+            });
+
+            var queryStr = '?' + params.toString();
+
+            // Refresh PDF Iframe with cache buster
+            var iframe = document.getElementById('reportIframe');
+            if (iframe) {
+                iframe.src = basePreviewUrl + queryStr + '&_ts=' + new Date().getTime();
+            }
+
+            // Refresh New Tab Link
+            var btnNewTab = document.getElementById('btnNewTab');
+            if (btnNewTab) {
+                btnNewTab.href = basePreviewUrl + queryStr;
+            }
+
+            // Refresh Export Links
+            var btnExcel = document.getElementById('btnExportExcel');
+            if (btnExcel) {
+                btnExcel.href = baseExportUrl + queryStr + '&format=EXCEL';
+            }
+            var btnPdf = document.getElementById('btnExportPdf');
+            if (btnPdf) {
+                btnPdf.href = baseExportUrl + queryStr + '&format=PDF';
+            }
+            var btnWord = document.getElementById('btnExportWord');
+            if (btnWord) {
+                btnWord.href = baseExportUrl + queryStr + '&format=WORD';
+            }
+
+            // Update Browser Address Bar without full page reload
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, '', baseIndexUrl + queryStr);
+            }
+
+            return false;
+        }
+
+        function reloadPreview() {
+            applyFilters();
+        }
+
+        function resetFilters() {
+            var today = new Date().toISOString().split('T')[0];
+            document.getElementById('inputFromDate').value = today;
+            document.getElementById('inputToDate').value = today;
+            document.getElementById('selectBranch').value = 'All';
+            document.getElementById('selectCurrency').value = 'All';
+            applyFilters();
+        }
+
+        function setPresetToToday() {
+            var today = new Date().toISOString().split('T')[0];
+            setPreset(today, today);
+        }
+
+        function setPreset(from, to) {
+            document.getElementById('inputFromDate').value = from;
+            document.getElementById('inputToDate').value = to;
+            applyFilters();
+        }
+
+        function printReportIframe() {
+            var iframe = document.getElementById('reportIframe');
+            if (iframe && iframe.contentWindow) {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+            } else {
+                window.print();
+            }
+        }
+
+        // Safety timeout to hide loader if iframe onload fires late
+        setTimeout(hideLoader, 5000);
+    </script>
+}
