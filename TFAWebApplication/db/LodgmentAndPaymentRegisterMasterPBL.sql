@@ -9,13 +9,15 @@ As
  -- spRPT_LodgmentAndPaymentRegisterMasterPBL '2022-01-01', '2026-12-31'
 
  -- Lodgment and Payment Register (Master) for export bills (FDBC). Used by LodgmentAndPaymentRegisterMasterPBL.rdl.
- -- This procedure replaces SP_RPT_LodgmentAndPaymentRegisterMaster_PBL. It returns the same columns, in the same order.
+ -- This procedure replaces SP_RPT_LodgmentAndPaymentRegisterMaster_PBL. It returns the same columns, in the same order. The 14 deduction columns are added after CommPaidAmount.
  -- One row for each export bill (ExportBillInitiationMaster). The bill is not deleted and not cancelled.
  -- Lodgment date = BillGenerationDate, between @FromDate and @ToDate.
  -- Step 1: exchange rates of the purchase/discount records (#PurchaseDiscount).
  -- Step 2: charges and commission paid for each bill (#BillCharge, #BillOtherCharge, #BillCommCurrency).
  --         Each charge has one account number (see #ChargeAccount). The bill gets the sum of the PRS distribution
  --         amount and the voucher amount.
+ --         Step 2 also sums the PRS deductions of each bill (#BillDeduction): FC Held, AIT, CFRMG, Reserve Margin, ORQ FC, ERQ FC and Encash to CD.
+ --         They have 2 columns each: Fcy (foreign currency) and Bdt (BDT). The AllocationHead values are in #DeductionHead.
  -- Step 3: ARV (export proceeds against RMT) adjustments (#TempARV).
  -- Step 4: the register rows.
  -- Overdue_Days = days after the maturity date, when the bill has no realization (Remarks = 'Overdue').
@@ -103,6 +105,49 @@ Begin
 		inner join PRSCreationMaster PRSM with(nolock) on PRSM.PRSSysID = VM.EventID
 	where VC.IsDeleted = 0 and VC.IsSendTransactionToCBS = 1 and VC.IsReversedFromCBS = 0 and VC.AccountNo = '202090529'
 	group by PRSM.EBIID
+
+	-- Deductions of the PRS distribution (AllocationHead), for each bill.
+	-- Fcy columns = distributed currency is not BDT. Bdt columns = distributed currency is BDT.
+	create table #DeductionHead (Head varchar(20) not null, Pattern varchar(60) not null)
+	insert into #DeductionHead (Head, Pattern) values
+		('FCHeld',			'DFC%'),
+		('AIT',				'AIT%'),
+		('CFRMG',			'RMG'),
+		('ReserveMargin',	'Fund Build Up'),
+		('ORQFC',			'ORQ%'),
+		('ERQFC',			'ERQ%'),
+		('EncashToCD',		'CD')
+
+	select
+		L.BillRefNo		EBIID,
+		DH.Head,
+		Fcy				= sum(case when isnull(L.DistributedCCY, '') != 'BDT' then L.DistributedValue end),
+		Bdt				= sum(case when L.DistributedCCY = 'BDT' then L.DistributedValue end)
+	into #DeductionAmount
+	from PRSCreationDistributionDetails L with(nolock)
+		inner join #DeductionHead DH on L.AllocationHead like DH.Pattern
+	where L.IsDeleted = 0 and L.IsSendTransactionToCBS = 1 and L.IsReversedFromCBS = 0
+	group by L.BillRefNo, DH.Head
+
+	select
+		D.EBIID,
+		FCHeldFcy	= sum(case when D.Head = 'FCHeld' then D.Fcy end),
+		AITFcy	= sum(case when D.Head = 'AIT' then D.Fcy end),
+		CFRMGFcy	= sum(case when D.Head = 'CFRMG' then D.Fcy end),
+		ReserveMarginFcy	= sum(case when D.Head = 'ReserveMargin' then D.Fcy end),
+		ORQFCFcy	= sum(case when D.Head = 'ORQFC' then D.Fcy end),
+		ERQFCFcy	= sum(case when D.Head = 'ERQFC' then D.Fcy end),
+		EncashToCDFcy	= sum(case when D.Head = 'EncashToCD' then D.Fcy end),
+		FCHeldBdt	= sum(case when D.Head = 'FCHeld' then D.Bdt end),
+		AITBdt	= sum(case when D.Head = 'AIT' then D.Bdt end),
+		CFRMGBdt	= sum(case when D.Head = 'CFRMG' then D.Bdt end),
+		ReserveMarginBdt	= sum(case when D.Head = 'ReserveMargin' then D.Bdt end),
+		ORQFCBdt	= sum(case when D.Head = 'ORQFC' then D.Bdt end),
+		ERQFCBdt	= sum(case when D.Head = 'ERQFC' then D.Bdt end),
+		EncashToCDBdt	= sum(case when D.Head = 'EncashToCD' then D.Bdt end)
+	into #BillDeduction
+	from #DeductionAmount D
+	group by D.EBIID
 
 	-- Step 3: ARV adjustments
 	---ARV
@@ -242,6 +287,20 @@ SELECT
 		VesselTrackingCharge		= OC.VesselTrackingCharge,
 		GovtfeeonJute				= OC.GovtfeeonJute,
 		CommPaidAmount				= CH.CommPaidAmount,
+		FCHeldFcy	= DD.FCHeldFcy,
+		AITFcy	= DD.AITFcy,
+		CFRMGFcy	= DD.CFRMGFcy,
+		ReserveMarginFcy	= DD.ReserveMarginFcy,
+		ORQFCFcy	= DD.ORQFCFcy,
+		ERQFCFcy	= DD.ERQFCFcy,
+		EncashToCDFcy	= DD.EncashToCDFcy,
+		FCHeldBdt	= DD.FCHeldBdt,
+		AITBdt	= DD.AITBdt,
+		CFRMGBdt	= DD.CFRMGBdt,
+		ReserveMarginBdt	= DD.ReserveMarginBdt,
+		ORQFCBdt	= DD.ORQFCBdt,
+		ERQFCBdt	= DD.ERQFCBdt,
+		EncashToCDBdt	= DD.EncashToCDBdt,
 		BuyingHouseNameForeign=Case when fstBeniCountry.CountryName !='Bangladesh' and  fstBeniCountry.CountryCode !='BD' then fstBeni.Name Else '' end,
 		CommCurruncy				= isnull(OC.CommCurrency, CCY.CommCurrency),
 		BuyingHouseNameLocal=Case when fstBeniCountry.CountryName ='Bangladesh' or  fstBeniCountry.CountryCode='BD' then fstBeni.Name Else '' end,
@@ -372,6 +431,7 @@ LEFT JOIN (
 		LEFT JOIN #BillCharge CH on CH.EBIID = ebim.EBIID
 		LEFT JOIN #BillOtherCharge OC on OC.EBIID = ebim.EBIID
 		LEFT JOIN #BillCommCurrency CCY on CCY.EBIID = ebim.EBIID
+		LEFT JOIN #BillDeduction DD on DD.EBIID = ebim.EBIID
 		where ebim.IsDeleted = 0 and ebim.IsCancelled = 0
 			and cast(ebim.BillGenerationDate as date) between @FromDate and @ToDate
 	) F

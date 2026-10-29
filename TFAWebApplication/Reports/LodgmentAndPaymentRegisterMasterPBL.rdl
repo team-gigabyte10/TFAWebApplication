@@ -5,7 +5,7 @@
     <DataSource Name="DataSource1">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=192.168.1.28\PBLTEST;Initial Catalog=EFA</ConnectString>
+        <ConnectString>Data Source=192.168.1.3\PBLTEST;Initial Catalog=EFA</ConnectString>
       </ConnectionProperties>
       <rd:SecurityType>DataBase</rd:SecurityType>
       <rd:DataSourceID>dbf48dcf-8b7e-4be9-8b2c-ddfc5db35393</rd:DataSourceID>
