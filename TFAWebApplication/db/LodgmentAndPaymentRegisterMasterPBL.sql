@@ -9,20 +9,18 @@ As
  -- spRPT_LodgmentAndPaymentRegisterMasterPBL '2022-01-01', '2026-12-31'
 
  -- Lodgment and Payment Register (Master) for export bills (FDBC). Used by LodgmentAndPaymentRegisterMasterPBL.rdl.
- -- This procedure replaces SP_RPT_LodgmentAndPaymentRegisterMaster_PBL. It returns the same columns, in the same order. The 14 deduction columns are added after CommPaidAmount.
- -- One row for each export bill (ExportBillInitiationMaster). The bill is not deleted and not cancelled.
+ -- This procedure replaces SP_RPT_LodgmentAndPaymentRegisterMaster_PBL. It returns the register columns aligned with
+ -- the 44-column specification in "FDBC - Lodgment and Payment Register.xlsx".
+ -- One row for each export bill (ExportBillInitiationMaster), including cancelled bills.
  -- Lodgment date = BillGenerationDate, between @FromDate and @ToDate.
  -- Step 1: exchange rates of the purchase/discount records (#PurchaseDiscount).
- -- Step 2: charges and commission paid for each bill (#BillCharge, #BillOtherCharge, #BillCommCurrency).
- --         Each charge has one account number (see #ChargeAccount). The bill gets the sum of the PRS distribution
- --         amount and the voucher amount.
- --         Step 2 also sums the PRS deductions of each bill (#BillDeduction): FC Held, AIT, CFRMG, Reserve Margin, ORQ FC, ERQ FC and Encash to CD.
- --         They have 2 columns each: Fcy (foreign currency) and Bdt (BDT). The AllocationHead values are in #DeductionHead.
+ -- Step 2: charges, commission, and PRS deductions for each bill (#BillCharge, #BillOtherCharge, #BillCommCurrency, #BillDeduction).
+ --         PRS deduction heads: FC Held, AIT, CFRMG, Reserve Margin, ORQ FC, ERQ FC and Encash to CD.
  -- Step 3: ARV (export proceeds against RMT) adjustments (#TempARV).
  -- Step 4: the register rows.
  -- Overdue_Days = days after the maturity date, when the bill has no realization (Remarks = 'Overdue').
  -- Exchange_Rate = exchange rate of the realization (PRSCreationDistributionDetails.ExchangeRate).
- -- BranchID, CustomerID, ApplicantID, EBIID and other ID columns are not shown. The Report Viewer filters use them.
+ -- BranchID, CustomerID, ApplicantID, EBIID and other ID columns are retained for Report Viewer filters.
 
 Begin
 	Set NoCount On;
@@ -107,47 +105,52 @@ Begin
 	group by PRSM.EBIID
 
 	-- Deductions of the PRS distribution (AllocationHead), for each bill.
-	-- Fcy columns = distributed currency is not BDT. Bdt columns = distributed currency is BDT.
-	create table #DeductionHead (Head varchar(20) not null, Pattern varchar(60) not null)
-	insert into #DeductionHead (Head, Pattern) values
-		('FCHeld',			'DFC%'),
-		('AIT',				'AIT%'),
-		('CFRMG',			'RMG'),
-		('ReserveMargin',	'Fund Build Up'),
-		('ORQFC',			'ORQ%'),
-		('ERQFC',			'ERQ%'),
-		('EncashToCD',		'CD')
-
+	-- PRS deduction heads: FC Held, AIT, CFRMG, Reserve Margin, ORQ FC, ERQ FC and Encash to CD.
 	select
 		L.BillRefNo		EBIID,
-		DH.Head,
-		Fcy				= sum(case when isnull(L.DistributedCCY, '') != 'BDT' then L.DistributedValue end),
-		Bdt				= sum(case when L.DistributedCCY = 'BDT' then L.DistributedValue end)
-	into #DeductionAmount
+		Head = case
+			when L.AllocationHead like 'DFC%' or L.AllocationHead like '%FC Held%' then 'FCHeld'
+			when L.AllocationHead like 'AIT%' or L.AllocationHead like '%Income Tax%' or L.AllocationHead like '%Tax%' then 'AIT'
+			when L.AllocationHead like '%RMG%' or L.AllocationHead like '%Central Fund%' then 'CFRMG'
+			when L.AllocationHead like '%Fund Build Up%' or L.AllocationHead like '%Reserve Margin%' or L.AllocationHead like '%Risk Margin%' then 'ReserveMargin'
+			when L.AllocationHead like 'ORQ%' then 'ORQFC'
+			when L.AllocationHead like 'ERQ%' then 'ERQFC'
+			when L.AllocationHead like '%CD%' or L.AllocationHead like '%Current Deposit%' then 'EncashToCD'
+		end,
+		L.DistributedCCY,
+		L.DistributedValue
+	into #BillDeductionsRaw
 	from PRSCreationDistributionDetails L with(nolock)
-		inner join #DeductionHead DH on L.AllocationHead like DH.Pattern
 	where L.IsDeleted = 0 and L.IsSendTransactionToCBS = 1 and L.IsReversedFromCBS = 0
-	group by L.BillRefNo, DH.Head
+		and (
+			L.AllocationHead like 'DFC%' or L.AllocationHead like '%FC Held%'
+			or L.AllocationHead like 'AIT%' or L.AllocationHead like '%Income Tax%' or L.AllocationHead like '%Tax%'
+			or L.AllocationHead like '%RMG%' or L.AllocationHead like '%Central Fund%'
+			or L.AllocationHead like '%Fund Build Up%' or L.AllocationHead like '%Reserve Margin%' or L.AllocationHead like '%Risk Margin%'
+			or L.AllocationHead like 'ORQ%'
+			or L.AllocationHead like 'ERQ%'
+			or L.AllocationHead like '%CD%' or L.AllocationHead like '%Current Deposit%'
+		)
 
 	select
-		D.EBIID,
-		FCHeldFcy	= sum(case when D.Head = 'FCHeld' then D.Fcy end),
-		AITFcy	= sum(case when D.Head = 'AIT' then D.Fcy end),
-		CFRMGFcy	= sum(case when D.Head = 'CFRMG' then D.Fcy end),
-		ReserveMarginFcy	= sum(case when D.Head = 'ReserveMargin' then D.Fcy end),
-		ORQFCFcy	= sum(case when D.Head = 'ORQFC' then D.Fcy end),
-		ERQFCFcy	= sum(case when D.Head = 'ERQFC' then D.Fcy end),
-		EncashToCDFcy	= sum(case when D.Head = 'EncashToCD' then D.Fcy end),
-		FCHeldBdt	= sum(case when D.Head = 'FCHeld' then D.Bdt end),
-		AITBdt	= sum(case when D.Head = 'AIT' then D.Bdt end),
-		CFRMGBdt	= sum(case when D.Head = 'CFRMG' then D.Bdt end),
-		ReserveMarginBdt	= sum(case when D.Head = 'ReserveMargin' then D.Bdt end),
-		ORQFCBdt	= sum(case when D.Head = 'ORQFC' then D.Bdt end),
-		ERQFCBdt	= sum(case when D.Head = 'ERQFC' then D.Bdt end),
-		EncashToCDBdt	= sum(case when D.Head = 'EncashToCD' then D.Bdt end)
+		R.EBIID,
+		FCHeldFcy			= sum(case when R.Head = 'FCHeld' then isnull(case when R.DistributedCCY != 'BDT' then R.DistributedValue end, R.DistributedValue) end),
+		AITFcy				= sum(case when R.Head = 'AIT' then R.DistributedValue end),
+		CFRMGFcy			= sum(case when R.Head = 'CFRMG' then R.DistributedValue end),
+		ReserveMarginFcy	= sum(case when R.Head = 'ReserveMargin' then R.DistributedValue end),
+		ORQFCFcy			= sum(case when R.Head = 'ORQFC' then isnull(case when R.DistributedCCY != 'BDT' then R.DistributedValue end, R.DistributedValue) end),
+		ERQFCFcy			= sum(case when R.Head = 'ERQFC' then isnull(case when R.DistributedCCY != 'BDT' then R.DistributedValue end, R.DistributedValue) end),
+		EncashToCDFcy		= sum(case when R.Head = 'EncashToCD' then R.DistributedValue end),
+		FCHeldBdt			= sum(case when R.Head = 'FCHeld' and R.DistributedCCY = 'BDT' then R.DistributedValue end),
+		AITBdt				= sum(case when R.Head = 'AIT' and R.DistributedCCY = 'BDT' then R.DistributedValue end),
+		CFRMGBdt			= sum(case when R.Head = 'CFRMG' and R.DistributedCCY = 'BDT' then R.DistributedValue end),
+		ReserveMarginBdt	= sum(case when R.Head = 'ReserveMargin' and R.DistributedCCY = 'BDT' then R.DistributedValue end),
+		ORQFCBdt			= sum(case when R.Head = 'ORQFC' and R.DistributedCCY = 'BDT' then R.DistributedValue end),
+		ERQFCBdt			= sum(case when R.Head = 'ERQFC' and R.DistributedCCY = 'BDT' then R.DistributedValue end),
+		EncashToCDBdt		= sum(case when R.Head = 'EncashToCD' and R.DistributedCCY = 'BDT' then R.DistributedValue end)
 	into #BillDeduction
-	from #DeductionAmount D
-	group by D.EBIID
+	from #BillDeductionsRaw R
+	group by R.EBIID
 
 	-- Step 3: ARV adjustments
 	---ARV
@@ -432,7 +435,7 @@ LEFT JOIN (
 		LEFT JOIN #BillOtherCharge OC on OC.EBIID = ebim.EBIID
 		LEFT JOIN #BillCommCurrency CCY on CCY.EBIID = ebim.EBIID
 		LEFT JOIN #BillDeduction DD on DD.EBIID = ebim.EBIID
-		where ebim.IsDeleted = 0 and ebim.IsCancelled = 0
+		where ebim.IsDeleted = 0
 			and cast(ebim.BillGenerationDate as date) between @FromDate and @ToDate
 	) F
 	order by F.FDBCNumber asc
