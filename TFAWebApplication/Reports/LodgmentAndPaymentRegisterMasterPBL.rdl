@@ -6,6 +6,7 @@
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
         <ConnectString>Data Source=192.168.1.3\PBLTEST;Initial Catalog=EFA</ConnectString>
+        <Prompt>Specify a user name and password for data source DataSource1:</Prompt>
       </ConnectionProperties>
       <rd:SecurityType>DataBase</rd:SecurityType>
       <rd:DataSourceID>dbf48dcf-8b7e-4be9-8b2c-ddfc5db35393</rd:DataSourceID>
@@ -339,7 +340,7 @@
           <DataField>Exchange_Rate</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
-              <Field Name="FCHeldFcy">
+        <Field Name="FCHeldFcy">
           <DataField>FCHeldFcy</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
@@ -405,144 +406,144 @@
           <Tablix Name="Tablix1">
             <TablixBody>
               <TablixColumns>
-<TablixColumn>
-                <Width>1.28128in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.125in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.61458in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.77461in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.0in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.6in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.0in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.11667in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>0.88333in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.0in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.0in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>2.08334in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>0.6in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.0in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.3in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.40833in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.15in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.31667in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.41667in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.14167in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>0.85833in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.0in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.0in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.0in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.0in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.0in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.0in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.44167in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.2in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.0in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>0.86667in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.0in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.0in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>0.825in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.0in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.425in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>1.0in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>0.95in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>0.95in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>0.95in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>0.95in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>0.95in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>0.95in</Width>
-              </TablixColumn>
-<TablixColumn>
-                <Width>0.95in</Width>
-              </TablixColumn>
-</TablixColumns>
+                <TablixColumn>
+                  <Width>1.28128in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.125in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.61458in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.77461in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.6in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.11667in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.88333in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2.08334in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.6in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.3in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.40833in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.15in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.31667in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.41667in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.14167in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.85833in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.44167in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.86667in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.825in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.425in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.95in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.95in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.95in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.95in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.95in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.95in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.95in</Width>
+                </TablixColumn>
+              </TablixColumns>
               <TablixRows>
                 <TablixRow>
                   <Height>0.28125in</Height>
                   <TablixCells>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox15">
                           <CanGrow>true</CanGrow>
@@ -579,7 +580,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox44">
                           <CanGrow>true</CanGrow>
@@ -616,7 +617,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox5">
                           <CanGrow>true</CanGrow>
@@ -653,7 +654,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox17">
                           <CanGrow>true</CanGrow>
@@ -690,7 +691,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox22">
                           <CanGrow>true</CanGrow>
@@ -727,7 +728,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox26">
                           <CanGrow>true</CanGrow>
@@ -767,7 +768,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox24">
                           <CanGrow>true</CanGrow>
@@ -804,7 +805,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox40">
                           <CanGrow>true</CanGrow>
@@ -841,7 +842,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox36">
                           <CanGrow>true</CanGrow>
@@ -878,7 +879,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox32">
                           <CanGrow>true</CanGrow>
@@ -915,7 +916,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox3">
                           <CanGrow>true</CanGrow>
@@ -952,7 +953,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox38">
                           <CanGrow>true</CanGrow>
@@ -989,7 +990,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox34">
                           <CanGrow>true</CanGrow>
@@ -1026,7 +1027,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox30">
                           <CanGrow>true</CanGrow>
@@ -1063,7 +1064,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox28">
                           <CanGrow>true</CanGrow>
@@ -1100,7 +1101,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox54">
                           <CanGrow>true</CanGrow>
@@ -1137,7 +1138,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox52">
                           <CanGrow>true</CanGrow>
@@ -1174,7 +1175,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox50">
                           <CanGrow>true</CanGrow>
@@ -1211,7 +1212,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox46">
                           <CanGrow>true</CanGrow>
@@ -1248,7 +1249,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox64">
                           <CanGrow>true</CanGrow>
@@ -1285,7 +1286,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox62">
                           <CanGrow>true</CanGrow>
@@ -1322,7 +1323,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox1">
                           <CanGrow>true</CanGrow>
@@ -1359,7 +1360,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox60">
                           <CanGrow>true</CanGrow>
@@ -1396,7 +1397,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox48">
                           <CanGrow>true</CanGrow>
@@ -1433,7 +1434,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox58">
                           <CanGrow>true</CanGrow>
@@ -1470,7 +1471,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox56">
                           <CanGrow>true</CanGrow>
@@ -1507,7 +1508,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox72">
                           <CanGrow>true</CanGrow>
@@ -1544,7 +1545,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox68">
                           <CanGrow>true</CanGrow>
@@ -1581,7 +1582,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox70">
                           <CanGrow>true</CanGrow>
@@ -1618,7 +1619,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox66">
                           <CanGrow>true</CanGrow>
@@ -1655,7 +1656,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox84">
                           <CanGrow>true</CanGrow>
@@ -1692,7 +1693,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox82">
                           <CanGrow>true</CanGrow>
@@ -1729,7 +1730,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox76">
                           <CanGrow>true</CanGrow>
@@ -1766,7 +1767,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox80">
                           <CanGrow>true</CanGrow>
@@ -1803,7 +1804,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox90">
                           <CanGrow>true</CanGrow>
@@ -1840,7 +1841,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox98">
                           <CanGrow>true</CanGrow>
@@ -1877,7 +1878,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox110">
                           <CanGrow>true</CanGrow>
@@ -1914,7 +1915,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Hdr_FCHeldFcy">
                           <CanGrow>true</CanGrow>
@@ -1951,7 +1952,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Hdr_AITFcy">
                           <CanGrow>true</CanGrow>
@@ -1988,7 +1989,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Hdr_CFRMGFcy">
                           <CanGrow>true</CanGrow>
@@ -2025,7 +2026,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Hdr_ReserveMarginFcy">
                           <CanGrow>true</CanGrow>
@@ -2062,7 +2063,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Hdr_ORQFCFcy">
                           <CanGrow>true</CanGrow>
@@ -2099,7 +2100,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Hdr_ERQFCFcy">
                           <CanGrow>true</CanGrow>
@@ -2136,7 +2137,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Hdr_EncashToCDFcy">
                           <CanGrow>true</CanGrow>
@@ -2173,12 +2174,12 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-</TablixCells>
+                  </TablixCells>
                 </TablixRow>
                 <TablixRow>
                   <Height>0.25in</Height>
                   <TablixCells>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="LodgmentDate">
                           <CanGrow>true</CanGrow>
@@ -2215,7 +2216,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="FDBCNumber">
                           <CanGrow>true</CanGrow>
@@ -2251,7 +2252,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Transaction_Ref">
                           <CanGrow>true</CanGrow>
@@ -2287,7 +2288,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="ClientName">
                           <CanGrow>true</CanGrow>
@@ -2323,7 +2324,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="CustomerType">
                           <CanGrow>true</CanGrow>
@@ -2359,7 +2360,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="BuyerorApplicantName">
                           <CanGrow>true</CanGrow>
@@ -2395,7 +2396,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="BuyerCountry">
                           <CanGrow>true</CanGrow>
@@ -2431,7 +2432,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="ADBranch">
                           <CanGrow>true</CanGrow>
@@ -2467,7 +2468,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="BillCurr">
                           <CanGrow>true</CanGrow>
@@ -2503,7 +2504,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="BillAmount">
                           <CanGrow>true</CanGrow>
@@ -2540,7 +2541,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="BillNature">
                           <CanGrow>true</CanGrow>
@@ -2576,7 +2577,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="PaymentTermFromTenor">
                           <CanGrow>true</CanGrow>
@@ -2612,7 +2613,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="InstrumentType">
                           <CanGrow>true</CanGrow>
@@ -2648,7 +2649,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="LCorSCNumber">
                           <CanGrow>true</CanGrow>
@@ -2684,7 +2685,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="DocumentsReceivingBank">
                           <CanGrow>true</CanGrow>
@@ -2720,7 +2721,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="CountryofDocumentsReceivingBank">
                           <CanGrow>true</CanGrow>
@@ -2756,7 +2757,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="LCIssuingBankCollectingBankPayingBank">
                           <CanGrow>true</CanGrow>
@@ -2792,7 +2793,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="CountryofLCIssuingBankCollectingBank">
                           <CanGrow>true</CanGrow>
@@ -2828,7 +2829,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="NameoftheBankHavingNostroAccountwith">
                           <CanGrow>true</CanGrow>
@@ -2864,7 +2865,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="NostroAccountCountry">
                           <CanGrow>true</CanGrow>
@@ -2900,7 +2901,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="PurchaseDate">
                           <CanGrow>true</CanGrow>
@@ -2937,7 +2938,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="PurchasedDiscountedThrough">
                           <CanGrow>true</CanGrow>
@@ -2973,7 +2974,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="PurchaseAmountFCY">
                           <CanGrow>true</CanGrow>
@@ -3010,7 +3011,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="ConversionRate">
                           <CanGrow>true</CanGrow>
@@ -3046,7 +3047,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="PurchaseAmountBDT">
                           <CanGrow>true</CanGrow>
@@ -3083,7 +3084,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="SettlementDate">
                           <CanGrow>true</CanGrow>
@@ -3120,7 +3121,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="DocumentsForwardingDate">
                           <CanGrow>true</CanGrow>
@@ -3157,7 +3158,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="CourierName">
                           <CanGrow>true</CanGrow>
@@ -3193,7 +3194,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="CourierReceiptNumber">
                           <CanGrow>true</CanGrow>
@@ -3229,7 +3230,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="BillAcknowledgementDate">
                           <CanGrow>true</CanGrow>
@@ -3266,7 +3267,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="DiscrepancyDate">
                           <CanGrow>true</CanGrow>
@@ -3303,7 +3304,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="MaturityDate">
                           <CanGrow>true</CanGrow>
@@ -3340,7 +3341,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="RealizedDate">
                           <CanGrow>true</CanGrow>
@@ -3377,7 +3378,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="RealizedAmount">
                           <CanGrow>true</CanGrow>
@@ -3414,7 +3415,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="Remarks">
                           <CanGrow>true</CanGrow>
@@ -3450,7 +3451,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="BuyingHouseNameForeign">
                           <CanGrow>true</CanGrow>
@@ -3486,7 +3487,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="BuyingHouseNameLocal">
                           <CanGrow>true</CanGrow>
@@ -3523,7 +3524,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="FCHeldFcy">
                           <CanGrow>true</CanGrow>
@@ -3560,7 +3561,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="AITFcy">
                           <CanGrow>true</CanGrow>
@@ -3597,7 +3598,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="CFRMGFcy">
                           <CanGrow>true</CanGrow>
@@ -3634,7 +3635,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="ReserveMarginFcy">
                           <CanGrow>true</CanGrow>
@@ -3671,7 +3672,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="ORQFCFcy">
                           <CanGrow>true</CanGrow>
@@ -3708,7 +3709,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="ERQFCFcy">
                           <CanGrow>true</CanGrow>
@@ -3745,7 +3746,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-<TablixCell>
+                    <TablixCell>
                       <CellContents>
                         <Textbox Name="EncashToCDFcy">
                           <CanGrow>true</CanGrow>
@@ -3782,7 +3783,7 @@
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-</TablixCells>
+                  </TablixCells>
                 </TablixRow>
               </TablixRows>
             </TablixBody>
@@ -3850,7 +3851,7 @@
             <Top>0.00917in</Top>
             <Left>0.01389in</Left>
             <Height>0.53125in</Height>
-            <Width>49.08217in</Width>
+            <Width>49.07882in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -3911,7 +3912,7 @@
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>FDBC - Lodgment and Payment Register - Master</Value>
+                      <Value>FDBC - Lodgment and Payment Register</Value>
                       <Style>
                         <FontFamily>Calibri</FontFamily>
                         <FontSize>16pt</FontSize>
@@ -4089,7 +4090,7 @@
           </Style>
         </PageFooter>
         <PageHeight>8.5in</PageHeight>
-        <PageWidth>50.0in</PageWidth>
+        <PageWidth>50in</PageWidth>
         <LeftMargin>0.15in</LeftMargin>
         <RightMargin>0.15in</RightMargin>
         <TopMargin>0.09in</TopMargin>
