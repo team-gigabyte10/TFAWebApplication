@@ -777,15 +777,15 @@ BEGIN
 			LEFT JOIN (
 				SELECT MasterDocID, SUM(ExportBillAmount) AS ExportBillAmount 
 				FROM (
-					SELECT MasterDocID, ExportBillAmount = ExportBillAmount * ISNULL(CLR.ConvertFactor, 1)
+					SELECT eb.MasterDocID, ExportBillAmount = eb.ExportBillAmount * ISNULL(CLR.ConvertFactor, 1)
 					FROM ExportBillInitiationMaster eb WITH(NOLOCK)
 					LEFT JOIN SystemManager..CurrencyLatestRate CLR WITH(NOLOCK) ON CLR.CurrencyCode = eb.CURRENCY_CODE AND CLR.RateFor = @RateForGroup
-					WHERE IsDeleted = 0 AND ISNULL(IsCancelled, 0) = 0 AND ExportBillNo IS NOT NULL 
+					WHERE eb.IsDeleted = 0 AND ISNULL(eb.IsCancelled, 0) = 0 AND eb.ExportBillNo IS NOT NULL 
 					UNION ALL
-					SELECT MasterDocID, ExportLocalBillAmount = ExportLocalBillAmount * ISNULL(CLR.ConvertFactor, 1)
+					SELECT eb.MasterDocID, ExportLocalBillAmount = eb.ExportLocalBillAmount * ISNULL(CLR.ConvertFactor, 1)
 					FROM LocalExportBillInitiationMaster eb WITH(NOLOCK)
 					LEFT JOIN SystemManager..CurrencyLatestRate CLR WITH(NOLOCK) ON CLR.CurrencyCode = eb.CURRENCY_CODE AND CLR.RateFor = @RateForGroup
-					WHERE IsDeleted = 0 AND ISNULL(IsCancelled, 0) = 0 AND ExportLocalBillNo IS NOT NULL
+					WHERE eb.IsDeleted = 0 AND ISNULL(eb.IsCancelled, 0) = 0 AND eb.ExportLocalBillNo IS NOT NULL
 				) A GROUP BY MasterDocID
 			) B ON B.MasterDocID = M.MasterDocID 
 			WHERE M.IsDeleted = 0 AND M.IsCancelled = 0 AND CONVERT(DATE, M.ShipmentDate) > CONVERT(DATE, DATEADD(DAY, 15, GETDATE())) 
@@ -801,15 +801,15 @@ BEGIN
 			LEFT JOIN (
 				SELECT MasterDocID, SUM(ExportBillAmount) AS ExportBillAmount 
 				FROM (
-					SELECT MasterDocID, ExportBillAmount = ExportBillAmount * ISNULL(CLR.ConvertFactor, 1)
+					SELECT eb.MasterDocID, ExportBillAmount = eb.ExportBillAmount * ISNULL(CLR.ConvertFactor, 1)
 					FROM ExportBillInitiationMaster eb WITH(NOLOCK)
 					LEFT JOIN SystemManager..CurrencyLatestRate CLR WITH(NOLOCK) ON CLR.CurrencyCode = eb.CURRENCY_CODE AND CLR.RateFor = @RateForGroup
-					WHERE IsDeleted = 0 AND ISNULL(IsCancelled, 0) = 0 AND ExportBillNo IS NOT NULL 
+					WHERE eb.IsDeleted = 0 AND ISNULL(eb.IsCancelled, 0) = 0 AND eb.ExportBillNo IS NOT NULL 
 					UNION ALL
-					SELECT MasterDocID, ExportLocalBillAmount = ExportLocalBillAmount * ISNULL(CLR.ConvertFactor, 1) 
+					SELECT eb.MasterDocID, ExportLocalBillAmount = eb.ExportLocalBillAmount * ISNULL(CLR.ConvertFactor, 1) 
 					FROM LocalExportBillInitiationMaster eb WITH(NOLOCK)
 					LEFT JOIN SystemManager..CurrencyLatestRate CLR WITH(NOLOCK) ON CLR.CurrencyCode = eb.CURRENCY_CODE AND CLR.RateFor = @RateForGroup
-					WHERE IsDeleted = 0 AND ISNULL(IsCancelled, 0) = 0 AND ExportLocalBillNo IS NOT NULL
+					WHERE eb.IsDeleted = 0 AND ISNULL(eb.IsCancelled, 0) = 0 AND eb.ExportLocalBillNo IS NOT NULL
 				) A GROUP BY MasterDocID
 			) B ON B.MasterDocID = M.MasterDocID 
 			WHERE M.IsDeleted = 0 AND M.IsCancelled = 0 AND CONVERT(DATE, GETDATE()) < CONVERT(DATE, M.ExpiryDate) 
