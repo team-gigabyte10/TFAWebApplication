@@ -43,9 +43,6 @@
           <QueryParameter Name="@AsOnDate">
             <Value>=Parameters!AsOnDate.Value</Value>
           </QueryParameter>
-          <QueryParameter Name="@IssuingBank">
-            <Value>=Parameters!IssuingBank.Value</Value>
-          </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
         <CommandText>spStatementofOverdueAcceptedBillsLocalReceivablesPBL</CommandText>
@@ -1391,10 +1388,6 @@
     <ReportParameter Name="AsOnDate">
       <DataType>DateTime</DataType>
       <Prompt>As On Date</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="IssuingBank">
-      <DataType>String</DataType>
-      <Prompt>Issuing Bank</Prompt>
     </ReportParameter>
   </ReportParameters>
   <rd:ReportUnitType>Inch</rd:ReportUnitType>
