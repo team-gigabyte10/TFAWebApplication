@@ -213,7 +213,7 @@ BEGIN
 		AND (
 			L.LoanAgainst = 'LoanType/LEDF' 
 			OR loantype.DisplayCode IN ('EDF', 'LEDF') 
-			OR loantype.DisplayText LIKE '%EDF%'
+			OR loantype.Description LIKE '%EDF%'
 			OR L.ExternalID LIKE '%EDF%' 
 			OR L.LoanNo LIKE '%EDF%'
 		)
@@ -415,7 +415,7 @@ BEGIN
 		AND (
 			L.LoanAgainst LIKE '%Force%'
 			OR loantype.DisplayCode IN ('FL', 'FORCED', 'TMFL', 'FBL', 'TM13', 'TM14', 'TM11')
-			OR loantype.DisplayText LIKE '%Force%'
+			OR loantype.Description LIKE '%Force%'
 			OR L.ExternalID LIKE '%FL%' OR L.LoanNo LIKE '%FL%'
 		)
 		GROUP BY G.GroupSysID
