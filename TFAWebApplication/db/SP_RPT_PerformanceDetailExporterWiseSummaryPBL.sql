@@ -7,6 +7,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 ALTER PROC [dbo].[SP_RPT_PerformanceDetailExporterWiseSummaryPBL]
+	@BranchID VARCHAR(100) = NULL
 	-- SP_RPT_PerformanceDetailExporterWiseSummaryPBL  
 AS											 
 BEGIN
@@ -572,7 +573,7 @@ BEGIN
 	FROM 
 	(
 		SELECT
-			Adbpb.BranchName,
+			BranchName = COALESCE(Adbpb.BranchName, BPB.BranchName, ''),
 			CPM.CustomerName AS ClientName,	
 			GLC.GroupRefNo AS GroupRefNo,
 			GLC.CurrencyCode AS GroupCurrency,
@@ -680,8 +681,8 @@ BEGIN
 			BuyerCountry = ISNULL(LTRIM(RTRIM(REPLACE(MD.CountryName, '&amp;', '&'))), ''),
 			CustomerID = GLC.CustomerID,
 			Applicant = MD.Applicant,
-			Branch = Adbpb.BranchName,
-			BranchID = GLC.BankBranchID,
+			Branch = COALESCE(Adbpb.BranchName, BPB.BranchName, ''),
+			BranchID = COALESCE(GLC.ADBranchID, BPB.ADBranchID, GLC.BankBranchID, ''),
 			GroupSysID = GLC.GroupSysID,
 			GroupStatus = CASE WHEN GLC.IsClosedGroup = 1 THEN 'Closed' ELSE 'Live' END,
 			CountryID = MD.CountryID,
@@ -898,8 +899,21 @@ BEGIN
 			GROUP BY MD.GroupSysID
 		) Bill ON Bill.GroupSysID = GLC.GroupSysID
 		LEFT JOIN SystemManager..CustomerProfileMaster CPM WITH(NOLOCK) ON CPM.CustomerID = GLC.CustomerID
-		LEFT JOIN SystemManager..BankProfileBranch Adbpb WITH(NOLOCK) ON Adbpb.BranchID = GLC.ADBranchID
+		LEFT JOIN SystemManager..BankProfileBranch BPB WITH(NOLOCK) ON BPB.BranchID = GLC.BankBranchID
+		LEFT JOIN SystemManager..BankProfileBranch Adbpb WITH(NOLOCK) ON Adbpb.BranchID = COALESCE(GLC.ADBranchID, BPB.ADBranchID, GLC.BankBranchID)
 		WHERE GLC.IsDeleted = 0 AND GLC.IsMigrated = 0
+		AND (
+			@BranchID IS NULL 
+			OR @BranchID = '' 
+			OR @BranchID = 'All' 
+			OR GLC.BankBranchID = @BranchID 
+			OR GLC.ADBranchID = @BranchID 
+			OR BPB.ADBranchID = @BranchID
+			OR BPB.BranchName = @BranchID
+			OR Adbpb.BranchName = @BranchID
+			OR BPB.BranchCode = @BranchID
+			OR Adbpb.BranchCode = @BranchID
+		)
 	) A 
 	ORDER BY A.GroupDate ASC;
 END
