@@ -8,8 +8,7 @@ GO
 
 CREATE OR ALTER PROC [dbo].[spRPT_PCCalculationPBL]
 	@FromDate DATE,
-	@ToDate DATE,
-	@IntendedDisbAmount DECIMAL(18, 2) = 0
+	@ToDate DATE
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -57,9 +56,10 @@ BEGIN
 			MD.MasterDocID,
 			MD.GroupSysID,
 			MD.LCNo,
+			MD.IssueDate,
 			MD.ShipmentDate,
 			MD.ExpiryDate,
-			MD.Applicant,
+			COALESCE(NULLIF(Applicant.Name, ''), NULLIF(MD.Applicant, ''), NULLIF(Advi.Applicant, ''), '') AS Applicant,
 			ISNULL(MD.PCMDLEntitlementPercent, 0) AS PCMDLEntitlementPercent,
 			CASE
 				WHEN ISNULL(NULLIF(MD.Currency, ''), GLC.CurrencyCode) = 'USD' THEN
@@ -84,6 +84,10 @@ BEGIN
 		FROM MasterDoc MD WITH (NOLOCK)
 		INNER JOIN GroupLC GLC WITH (NOLOCK)
 			ON GLC.GroupSysID = MD.GroupSysID
+		LEFT JOIN LCAdvisingRegister Advi WITH (NOLOCK)
+			ON Advi.LCReceiveID = MD.LCReceiveID
+		LEFT JOIN SystemManager..Contacts Applicant WITH (NOLOCK)
+			ON Applicant.Code = ISNULL(NULLIF(MD.Applicant, ''), Advi.Applicant)
 		LEFT JOIN CurrencyRates CR
 			ON CR.CurrencyCode = ISNULL(NULLIF(MD.Currency, ''), GLC.CurrencyCode)
 		WHERE MD.IsDeleted = 0
@@ -101,6 +105,7 @@ BEGIN
 				  AND ISNULL(LTRIM(RTRIM(M2.LCNo)), '') <> ''
 				FOR XML PATH(''), TYPE
 			).value('.', 'NVARCHAR(MAX)'), 1, 2, '') AS ExportLCNo,
+			MIN(MDV.IssueDate) AS MinIssueDate,
 			MAX(MDV.ShipmentDate) AS ShipmentDate,
 			MAX(MDV.ExpiryDate) AS ExpiryDate,
 			STUFF((
@@ -205,7 +210,7 @@ BEGIN
 		  AND ISNULL(LAIC.LoanCreationID, '') <> ''
 		GROUP BY LAIC.LoanCreationID
 	),
-	LoanOS AS (
+	LoanOSByNumber AS (
 		SELECT
 			LO.LoanNumber,
 			MAX(ISNULL(LO.PRINCIPAL_OS, 0)) AS PRINCIPAL_OS,
@@ -214,19 +219,48 @@ BEGIN
 		WHERE ISNULL(LO.LoanNumber, '') <> ''
 		GROUP BY LO.LoanNumber
 	),
+	LoanOSByAccount AS (
+		SELECT
+			LO.AccountNumber,
+			MAX(ISNULL(LO.PRINCIPAL_OS, 0)) AS PRINCIPAL_OS,
+			MAX(ISNULL(LO.TOT_OS, 0)) AS TOT_OS
+		FROM LoanOutstanding LO WITH (NOLOCK)
+		WHERE ISNULL(LO.AccountNumber, '') <> ''
+		GROUP BY LO.AccountNumber
+	),
 	PCDisb AS (
 		SELECT
-			PCM.GroupRefID AS GroupSysID,
+			COALESCE(NULLIF(PCM.GroupRefID, ''), MD_PCM.GroupSysID, '') AS GroupSysID,
+			MAX(NULLIF(PCM.BranchID, '')) AS BranchID,
 			SUM(
 				CASE
 					WHEN (
 						PCM.PCDisburseDate IS NOT NULL
+						OR ISNULL(PCM.IsCheck, 0) = 1
 						OR ISNULL(PCM.UBSSyncProcessID, 0) > 0
 						OR ISNULL(PCM.IsPCNumberGenerated, 0) = 1
 						OR ISNULL(PCM.AdditionalFilter, '') <> ''
 					)
 					AND CAST(ISNULL(PCM.PCDisburseDate, PCM.PCCreationDate) AS DATE) BETWEEN @FromDate AND @ToDate
-						THEN COALESCE(NULLIF(PCM.PCAmountTK, 0), ISNULL(PCM.PCAmount, 0) * ISNULL(PCM.ExchangeRate, 0), 0)
+						THEN 1
+					ELSE 0
+				END
+			) AS DisbCountInRange,
+			SUM(
+				CASE
+					WHEN (
+						PCM.PCDisburseDate IS NOT NULL
+						OR ISNULL(PCM.IsCheck, 0) = 1
+						OR ISNULL(PCM.UBSSyncProcessID, 0) > 0
+						OR ISNULL(PCM.IsPCNumberGenerated, 0) = 1
+						OR ISNULL(PCM.AdditionalFilter, '') <> ''
+					)
+					AND CAST(ISNULL(PCM.PCDisburseDate, PCM.PCCreationDate) AS DATE) BETWEEN @FromDate AND @ToDate
+						THEN COALESCE(
+							NULLIF(PCM.PCAmountTK, 0),
+							ISNULL(PCM.PCAmount, 0) * COALESCE(NULLIF(PCM.ExchangeRate, 0), @USDRate, 0),
+							0
+						)
 					ELSE 0
 				END
 			) AS TotalPCDisbursed,
@@ -234,6 +268,7 @@ BEGIN
 				CASE
 					WHEN (
 						PCM.PCDisburseDate IS NOT NULL
+						OR ISNULL(PCM.IsCheck, 0) = 1
 						OR ISNULL(PCM.UBSSyncProcessID, 0) > 0
 						OR ISNULL(PCM.IsPCNumberGenerated, 0) = 1
 						OR ISNULL(PCM.AdditionalFilter, '') <> ''
@@ -246,12 +281,14 @@ BEGIN
 									WHEN ISNULL(PCM.PRINCIPAL_OS, 0) > 0 THEN PCM.PRINCIPAL_OS
 									ELSE ISNULL(PCM.TOT_OS, 0)
 								END
-							WHEN ISNULL(LO.PRINCIPAL_OS, 0) > 0 THEN LO.PRINCIPAL_OS
-							WHEN ISNULL(LO.TOT_OS, 0) > 0 THEN LO.TOT_OS
+							WHEN COALESCE(NULLIF(LO_NUM.PRINCIPAL_OS, 0), NULLIF(LO_ACC.PRINCIPAL_OS, 0), 0) > 0
+								THEN COALESCE(NULLIF(LO_NUM.PRINCIPAL_OS, 0), NULLIF(LO_ACC.PRINCIPAL_OS, 0), 0)
+							WHEN COALESCE(NULLIF(LO_NUM.TOT_OS, 0), NULLIF(LO_ACC.TOT_OS, 0), 0) > 0
+								THEN COALESCE(NULLIF(LO_NUM.TOT_OS, 0), NULLIF(LO_ACC.TOT_OS, 0), 0)
 							ELSE
 								CASE
-									WHEN COALESCE(NULLIF(PCM.PCAmountTK, 0), ISNULL(PCM.PCAmount, 0) * ISNULL(PCM.ExchangeRate, 0), 0) - ISNULL(ADJ.AdjustedAmountBDT, 0) > 0
-										THEN COALESCE(NULLIF(PCM.PCAmountTK, 0), ISNULL(PCM.PCAmount, 0) * ISNULL(PCM.ExchangeRate, 0), 0) - ISNULL(ADJ.AdjustedAmountBDT, 0)
+									WHEN COALESCE(NULLIF(PCM.PCAmountTK, 0), ISNULL(PCM.PCAmount, 0) * COALESCE(NULLIF(PCM.ExchangeRate, 0), @USDRate, 0), 0) - ISNULL(ADJ.AdjustedAmountBDT, 0) > 0
+										THEN COALESCE(NULLIF(PCM.PCAmountTK, 0), ISNULL(PCM.PCAmount, 0) * COALESCE(NULLIF(PCM.ExchangeRate, 0), @USDRate, 0), 0) - ISNULL(ADJ.AdjustedAmountBDT, 0)
 									ELSE 0
 								END
 						END
@@ -261,23 +298,33 @@ BEGIN
 			SUM(
 				CASE
 					WHEN PCM.PCDisburseDate IS NULL
+					 AND ISNULL(PCM.IsCheck, 0) = 0
 					 AND ISNULL(PCM.UBSSyncProcessID, 0) = 0
 					 AND ISNULL(PCM.IsPCNumberGenerated, 0) = 0
 					 AND ISNULL(PCM.AdditionalFilter, '') = ''
 					 AND PCM.ClosedDate IS NULL
 					 AND CAST(PCM.PCCreationDate AS DATE) <= @ToDate
-						THEN COALESCE(NULLIF(PCM.PCAmountTK, 0), ISNULL(PCM.PCAmount, 0) * ISNULL(PCM.ExchangeRate, 0), 0)
+						THEN COALESCE(
+							NULLIF(PCM.PCAmountTK, 0),
+							ISNULL(PCM.PCAmount, 0) * COALESCE(NULLIF(PCM.ExchangeRate, 0), @USDRate, 0),
+							0
+						)
 					ELSE 0
 				END
 			) AS IntendedDisbBDT
 		FROM PCDisbursementMaster PCM WITH (NOLOCK)
+		LEFT JOIN MasterDoc MD_PCM WITH (NOLOCK)
+			ON MD_PCM.MasterDocID = PCM.MasterDocID
+		   AND MD_PCM.IsDeleted = 0
 		LEFT JOIN PCAdjustments ADJ
 			ON ADJ.LoanCreationID = PCM.PCDMID
-		LEFT JOIN LoanOS LO
-			ON LO.LoanNumber = PCM.AdditionalFilter
+		LEFT JOIN LoanOSByNumber LO_NUM
+			ON LO_NUM.LoanNumber = PCM.AdditionalFilter
+		LEFT JOIN LoanOSByAccount LO_ACC
+			ON LO_ACC.AccountNumber = PCM.ExternalID
 		WHERE PCM.IsDeleted = 0
-		  AND ISNULL(PCM.GroupRefID, '') <> ''
-		GROUP BY PCM.GroupRefID
+		  AND COALESCE(NULLIF(PCM.GroupRefID, ''), MD_PCM.GroupSysID, '') <> ''
+		GROUP BY COALESCE(NULLIF(PCM.GroupRefID, ''), MD_PCM.GroupSysID, '')
 	),
 	BaseCalc AS (
 		SELECT
@@ -309,7 +356,7 @@ BEGIN
 			ISNULL(ELC.BuyerName, '') AS BuyerName,
 			ISNULL(EM.ExportMadeUSD, 0) AS ExportMadeUSD,
 			CAST(ISNULL(PC.PCOutstandingBDT, 0) AS DECIMAL(18, 2)) AS PCOutstandingBDT,
-			CAST(ISNULL(PC.IntendedDisbBDT, 0) + ISNULL(@IntendedDisbAmount, 0) AS DECIMAL(18, 2)) AS IntendedDisbBDT,
+			CAST(ISNULL(PC.IntendedDisbBDT, 0) AS DECIMAL(18, 2)) AS IntendedDisbBDT,
 			CAST(
 				COALESCE(
 					NULLIF(PL.PCLimitPercent, 0),
@@ -319,11 +366,14 @@ BEGIN
 					0
 				) AS DECIMAL(18, 4)
 			) AS PCEntitlementPct,
-			COALESCE(NULLIF(GLC.BankBranchID, ''), GLC.ADBranchID, '') AS BranchID,
+			COALESCE(NULLIF(GLC.BankBranchID, ''), NULLIF(GLC.ADBranchID, ''), NULLIF(PC.BranchID, ''), '') AS BranchID,
 			ISNULL(BPB.BranchName, '') AS BranchName,
 			ISNULL(GLC.CustomerID, '') AS CustomerID,
-			ISNULL(CPM.CustomerName, '') AS CustomerName
+			ISNULL(CPM.CustomerName, '') AS CustomerName,
+			ISNULL(PC.DisbCountInRange, 0) AS DisbCountInRange
 		FROM GroupLC GLC WITH (NOLOCK)
+		LEFT JOIN PCDisb PC
+			ON PC.GroupSysID = GLC.GroupSysID
 		LEFT JOIN ExportLC ELC
 			ON ELC.GroupSysID = GLC.GroupSysID
 		LEFT JOIN BTBUtilized BTB
@@ -332,17 +382,19 @@ BEGIN
 			ON EM.GroupSysID = GLC.GroupSysID
 		LEFT JOIN PCLimit PL
 			ON PL.GroupSysID = GLC.GroupSysID
-		LEFT JOIN PCDisb PC
-			ON PC.GroupSysID = GLC.GroupSysID
 		LEFT JOIN CurrencyRates CR_G
 			ON CR_G.CurrencyCode = GLC.CurrencyCode
 		LEFT JOIN SystemManager..CustomerProfileMaster CPM WITH (NOLOCK)
 			ON CPM.CustomerID = GLC.CustomerID
 		LEFT JOIN SystemManager..BankProfileBranch BPB WITH (NOLOCK)
-			ON BPB.BranchID = COALESCE(NULLIF(GLC.BankBranchID, ''), GLC.ADBranchID)
+			ON BPB.BranchID = COALESCE(NULLIF(GLC.BankBranchID, ''), NULLIF(GLC.ADBranchID, ''), NULLIF(PC.BranchID, ''))
 		WHERE GLC.IsDeleted = 0
 		  AND ISNULL(GLC.IsMigrated, 0) = 0
 		  AND ISNULL(GLC.IsClosedGroup, 0) = 0
+		  AND (
+			  ISNULL(PC.DisbCountInRange, 0) > 0
+			  OR CAST(COALESCE(ELC.MinIssueDate, GLC.DateAdded) AS DATE) BETWEEN @FromDate AND @ToDate
+		  )
 	),
 	FinalCalc AS (
 		SELECT

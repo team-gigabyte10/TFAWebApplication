@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
@@ -6,8 +6,9 @@
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
         <ConnectString>Data Source=192.168.1.3\PBLTEST;Initial Catalog=EFA</ConnectString>
+        <Prompt>Specify a user name and password for data source DataSource1:</Prompt>
       </ConnectionProperties>
-      <rd:SecurityType>None</rd:SecurityType>
+      <rd:SecurityType>DataBase</rd:SecurityType>
       <rd:DataSourceID>9d7c3f12-4a6b-4e9d-8b5a-11c0a2e3f401</rd:DataSourceID>
     </DataSource>
   </DataSources>
@@ -1893,9 +1894,9 @@
             <TablixRowHierarchy>
               <TablixMembers>
                 <TablixMember>
+                  <FixedData>true</FixedData>
                   <KeepWithGroup>After</KeepWithGroup>
                   <RepeatOnNewPage>true</RepeatOnNewPage>
-                  <FixedData>true</FixedData>
                 </TablixMember>
                 <TablixMember>
                   <Group Name="Details" />
@@ -1907,7 +1908,6 @@
             </TablixRowHierarchy>
             <DataSetName>DataSet1</DataSetName>
             <Top>0.05in</Top>
-            <Left>0in</Left>
             <Height>0.84in</Height>
             <Width>16.98333in</Width>
             <Style>
@@ -1923,7 +1923,7 @@
       <Width>16.98333in</Width>
       <Page>
         <PageHeader>
-          <Height>0.95in</Height>
+          <Height>0.78in</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
@@ -1947,39 +1947,8 @@
                 </Paragraph>
               </Paragraphs>
               <Top>0.05in</Top>
-              <Left>0in</Left>
               <Height>0.26in</Height>
               <Width>16.98333in</Width>
-              <Style>
-                <Border>
-                  <Style>None</Style>
-                </Border>
-                <VerticalAlign>Middle</VerticalAlign>
-              </Style>
-            </Textbox>
-            <Textbox Name="CompanyAddress">
-              <CanGrow>true</CanGrow>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>=First(Fields!Address.Value, "DsCompanyInfo")</Value>
-                      <Style>
-                        <FontSize>9pt</FontSize>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style>
-                    <TextAlign>Center</TextAlign>
-                  </Style>
-                </Paragraph>
-              </Paragraphs>
-              <Top>0.31in</Top>
-              <Left>0in</Left>
-              <Height>0.2in</Height>
-              <Width>16.98333in</Width>
-              <ZIndex>1</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
@@ -2006,11 +1975,10 @@
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>0.52in</Top>
-              <Left>0in</Left>
+              <Top>0.34in</Top>
               <Height>0.22in</Height>
               <Width>16.98333in</Width>
-              <ZIndex>2</ZIndex>
+              <ZIndex>1</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
@@ -2037,11 +2005,10 @@
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>0.74in</Top>
-              <Left>0in</Left>
+              <Top>0.56in</Top>
               <Height>0.2in</Height>
               <Width>16.98333in</Width>
-              <ZIndex>3</ZIndex>
+              <ZIndex>2</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
@@ -2061,6 +2028,35 @@
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
+            <Textbox Name="PoweredBy">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>Powered by CslSoft</Value>
+                      <Style>
+                        <FontSize>8pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Left</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.04in</Top>
+              <Height>0.2in</Height>
+              <Width>4.5in</Width>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <VerticalAlign>Middle</VerticalAlign>
+              </Style>
+            </Textbox>
             <Textbox Name="PrintTime">
               <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
@@ -2075,14 +2071,15 @@
                     </TextRun>
                   </TextRuns>
                   <Style>
-                    <TextAlign>Left</TextAlign>
+                    <TextAlign>Center</TextAlign>
                   </Style>
                 </Paragraph>
               </Paragraphs>
               <Top>0.04in</Top>
-              <Left>0in</Left>
+              <Left>4.5in</Left>
               <Height>0.2in</Height>
-              <Width>8in</Width>
+              <Width>7.98333in</Width>
+              <ZIndex>1</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
@@ -2109,10 +2106,10 @@
                 </Paragraph>
               </Paragraphs>
               <Top>0.04in</Top>
-              <Left>8.98333in</Left>
+              <Left>12.48333in</Left>
               <Height>0.2in</Height>
-              <Width>8in</Width>
-              <ZIndex>1</ZIndex>
+              <Width>4.5in</Width>
+              <ZIndex>2</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
@@ -2160,4 +2157,3 @@
   <rd:ReportUnitType>Inch</rd:ReportUnitType>
   <rd:ReportID>a8e19d4b-5e0f-413b-9b99-82f5c3e1d642</rd:ReportID>
 </Report>
-
