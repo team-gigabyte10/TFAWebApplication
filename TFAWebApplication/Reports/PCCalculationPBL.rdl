@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
@@ -1993,7 +1993,7 @@
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>="Disburse Date: " &amp; Format(Parameters!FromDate.Value, "dd-MMM-yyyy") &amp; " To " &amp; Format(Parameters!ToDate.Value, "dd-MMM-yyyy") &amp; IIf(CountRows("DataSet1") &gt; 0, "   |   USD Rate: " &amp; Format(First(Fields!USDRate.Value, "DataSet1"), "0.00"), "")</Value>
+                      <Value>="Disburse Date: " &amp; Format(Parameters!FromDate.Value, "dd-MMM-yyyy") &amp; " To " &amp; Format(Parameters!ToDate.Value, "dd-MMM-yyyy")</Value>
                       <Style>
                         <FontSize>8.5pt</FontSize>
                         <FontWeight>Bold</FontWeight>
@@ -2057,36 +2057,6 @@
                 <VerticalAlign>Middle</VerticalAlign>
               </Style>
             </Textbox>
-            <Textbox Name="PrintTime">
-              <CanGrow>true</CanGrow>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>="Printed On: " &amp; Format(Globals!ExecutionTime, "dd-MMM-yyyy hh:mm tt")</Value>
-                      <Style>
-                        <FontSize>8pt</FontSize>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style>
-                    <TextAlign>Center</TextAlign>
-                  </Style>
-                </Paragraph>
-              </Paragraphs>
-              <Top>0.04in</Top>
-              <Left>4.5in</Left>
-              <Height>0.2in</Height>
-              <Width>7.98333in</Width>
-              <ZIndex>1</ZIndex>
-              <Style>
-                <Border>
-                  <Style>None</Style>
-                </Border>
-                <VerticalAlign>Middle</VerticalAlign>
-              </Style>
-            </Textbox>
             <Textbox Name="PageNumber">
               <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
@@ -2109,7 +2079,7 @@
               <Left>12.48333in</Left>
               <Height>0.2in</Height>
               <Width>4.5in</Width>
-              <ZIndex>2</ZIndex>
+              <ZIndex>1</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
