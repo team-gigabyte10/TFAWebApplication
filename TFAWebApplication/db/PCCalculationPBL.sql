@@ -1,6 +1,6 @@
 USE [EFA]
 GO
-/****** Object:  StoredProcedure [dbo].[spRPT_PCCalculationPBL]    Script Date: 11/11/2026 ******/
+/****** Object:  StoredProcedure [dbo].[spRPT_PCCalculationPBL]    Script Date: 15/11/2026 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -22,13 +22,34 @@ BEGIN
 	IF ISNULL(@RateForGroup, '') = ''
 		SET @RateForGroup = 'BC SELLING';
 
+	-- Specifically look for RateFor = 'MID RATE' first, with fallback to SystemSettings rate, BC SELLING, or latest rate
 	DECLARE @USDRate DECIMAL(18, 8);
 	SELECT TOP 1
 		@USDRate = ISNULL(CLR.ConvertFactor, 0)
 	FROM SystemManager..CurrencyLatestRate CLR WITH (NOLOCK)
 	WHERE CLR.IsDeleted = 0
 	  AND CLR.CurrencyCode = 'USD'
-	  AND CLR.RateFor = @RateForGroup;
+	  AND CLR.RateFor = 'MID RATE';
+
+	IF ISNULL(@USDRate, 0) = 0
+	BEGIN
+		SELECT TOP 1
+			@USDRate = ISNULL(CLR.ConvertFactor, 0)
+		FROM SystemManager..CurrencyLatestRate CLR WITH (NOLOCK)
+		WHERE CLR.IsDeleted = 0
+		  AND CLR.CurrencyCode = 'USD'
+		  AND CLR.RateFor = @RateForGroup;
+	END;
+
+	IF ISNULL(@USDRate, 0) = 0
+	BEGIN
+		SELECT TOP 1
+			@USDRate = ISNULL(CLR.ConvertFactor, 0)
+		FROM SystemManager..CurrencyLatestRate CLR WITH (NOLOCK)
+		WHERE CLR.IsDeleted = 0
+		  AND CLR.CurrencyCode = 'USD'
+		  AND CLR.RateFor = 'BC SELLING';
+	END;
 
 	IF ISNULL(@USDRate, 0) = 0
 	BEGIN
@@ -40,12 +61,14 @@ BEGIN
 	END;
 
 	IF ISNULL(@USDRate, 0) = 0
-		SET @USDRate = 0;
+		SET @USDRate = 1;
 
 	;WITH CurrencyRates AS (
 		SELECT
 			CLR.CurrencyCode,
+			MAX(CASE WHEN CLR.RateFor = 'MID RATE' THEN CLR.ConvertFactor END) AS MidRate,
 			MAX(CASE WHEN CLR.RateFor = @RateForGroup THEN CLR.ConvertFactor END) AS GroupRate,
+			MAX(CASE WHEN CLR.RateFor = 'BC SELLING' THEN CLR.ConvertFactor END) AS BCSellingRate,
 			MAX(CLR.ConvertFactor) AS FallbackRate
 		FROM SystemManager..CurrencyLatestRate CLR WITH (NOLOCK)
 		WHERE CLR.IsDeleted = 0
@@ -77,7 +100,7 @@ BEGIN
 								THEN ISNULL(MD.LCAmount, 0) - ISNULL(MD.Commission, 0) - ISNULL(MD.Freight, 0) - ISNULL(MD.ReplacedAmount, 0)
 							ELSE 0
 						END
-						* COALESCE(NULLIF(CR.GroupRate, 0), NULLIF(CR.FallbackRate, 0), 0)
+						* COALESCE(NULLIF(CR.MidRate, 0), NULLIF(CR.GroupRate, 0), NULLIF(CR.BCSellingRate, 0), NULLIF(CR.FallbackRate, 0), 0)
 					) / @USDRate
 				ELSE 0
 			END AS DocValueUSD
@@ -120,32 +143,59 @@ BEGIN
 		FROM MasterDocValues MDV
 		GROUP BY MDV.GroupSysID
 	),
-	BTBUtilized AS (
+	RealizedProceeds AS (
 		SELECT
-			B.GroupSysID,
-			SUM(
-				CASE
-					WHEN ISNULL(NULLIF(B.Currency, ''), 'USD') = 'USD' THEN ISNULL(B.BBLCAmount, 0)
-					WHEN ISNULL(@USDRate, 0) > 0 THEN
-						(ISNULL(B.BBLCAmount, 0) * COALESCE(NULLIF(CR.GroupRate, 0), NULLIF(CR.FallbackRate, 0), 0)) / @USDRate
-					ELSE 0
-				END
-			) AS BTBAmountUSD
-		FROM BBLCMaster B WITH (NOLOCK)
-		LEFT JOIN CurrencyRates CR
-			ON CR.CurrencyCode = B.Currency
-		WHERE B.IsDeleted = 0
-		  AND ISNULL(B.IsCancelled, 0) = 0
-		  AND ISNULL(B.GroupSysID, '') <> ''
-		GROUP BY B.GroupSysID
+			R.EBIID,
+			SUM(R.RealizedUSD) AS RealizedUSD
+		FROM (
+			SELECT
+				PRSM.EBIID,
+				SUM(
+					CASE
+						WHEN ISNULL(NULLIF(PRSM.ProceedsCurrency, ''), 'USD') = 'USD' THEN ISNULL(PRSM.C_Amount, 0)
+						WHEN ISNULL(@USDRate, 0) > 0 THEN
+							(ISNULL(PRSM.C_Amount, 0) * COALESCE(NULLIF(CR.MidRate, 0), NULLIF(CR.GroupRate, 0), NULLIF(CR.BCSellingRate, 0), NULLIF(CR.FallbackRate, 0), 0)) / @USDRate
+						ELSE 0
+					END
+				) AS RealizedUSD
+			FROM PRSCreationMaster PRSM WITH (NOLOCK)
+			LEFT JOIN CurrencyRates CR ON CR.CurrencyCode = PRSM.ProceedsCurrency
+			WHERE PRSM.IsDeleted = 0
+			  AND ISNULL(PRSM.EBIID, '') <> ''
+			GROUP BY PRSM.EBIID
+
+			UNION ALL
+
+			SELECT
+				P.BillRefNo AS EBIID,
+				SUM(
+					CASE
+						WHEN ISNULL(NULLIF(P.Currency, ''), 'USD') = 'USD' THEN ISNULL(P.ProceedsRecvd, 0)
+						WHEN ISNULL(@USDRate, 0) > 0 THEN
+							(ISNULL(P.ProceedsRecvd, 0) * COALESCE(NULLIF(CR.MidRate, 0), NULLIF(CR.GroupRate, 0), NULLIF(CR.BCSellingRate, 0), NULLIF(CR.FallbackRate, 0), 0)) / @USDRate
+						ELSE 0
+					END
+				) AS RealizedUSD
+			FROM PRSCreationDistributionDetails P WITH (NOLOCK)
+			LEFT JOIN CurrencyRates CR ON CR.CurrencyCode = P.Currency
+			WHERE P.IsDeleted = 0
+			  AND ISNULL(P.BillRefNo, '') <> ''
+			  AND NOT EXISTS (
+				  SELECT 1 FROM PRSCreationMaster M WITH (NOLOCK)
+				  WHERE M.EBIID = P.BillRefNo AND M.IsDeleted = 0
+			  )
+			GROUP BY P.BillRefNo
+		) R
+		GROUP BY R.EBIID
 	),
 	ExportBills AS (
 		SELECT
+			EBI.EBIID,
 			MD.GroupSysID,
 			CASE
 				WHEN ISNULL(NULLIF(EBI.BILL_CCY, ''), 'USD') = 'USD' THEN ISNULL(EBI.ExportBillAmount, 0)
 				WHEN ISNULL(@USDRate, 0) > 0 THEN
-					(ISNULL(EBI.ExportBillAmount, 0) * COALESCE(NULLIF(CR.GroupRate, 0), NULLIF(CR.FallbackRate, 0), 0)) / @USDRate
+					(ISNULL(EBI.ExportBillAmount, 0) * COALESCE(NULLIF(CR.MidRate, 0), NULLIF(CR.GroupRate, 0), NULLIF(CR.BCSellingRate, 0), NULLIF(CR.FallbackRate, 0), 0)) / @USDRate
 				ELSE 0
 			END AS BillAmountUSD
 		FROM ExportBillInitiationMaster EBI WITH (NOLOCK)
@@ -154,6 +204,7 @@ BEGIN
 		LEFT JOIN CurrencyRates CR
 			ON CR.CurrencyCode = EBI.BILL_CCY
 		WHERE EBI.IsDeleted = 0
+		  AND ISNULL(EBI.IsCancelled, 0) = 0
 		  AND MD.IsDeleted = 0
 		  AND ISNULL(MD.IsCancelled, 0) = 0
 		  AND ISNULL(MD.GroupSysID, '') <> ''
@@ -161,11 +212,12 @@ BEGIN
 		UNION ALL
 
 		SELECT
+			LEBI.EBIID,
 			MD.GroupSysID,
 			CASE
 				WHEN ISNULL(NULLIF(LEBI.BILL_CCY, ''), 'USD') = 'USD' THEN ISNULL(LEBI.ExportLocalBillAmount, 0)
 				WHEN ISNULL(@USDRate, 0) > 0 THEN
-					(ISNULL(LEBI.ExportLocalBillAmount, 0) * COALESCE(NULLIF(CR.GroupRate, 0), NULLIF(CR.FallbackRate, 0), 0)) / @USDRate
+					(ISNULL(LEBI.ExportLocalBillAmount, 0) * COALESCE(NULLIF(CR.MidRate, 0), NULLIF(CR.GroupRate, 0), NULLIF(CR.BCSellingRate, 0), NULLIF(CR.FallbackRate, 0), 0)) / @USDRate
 				ELSE 0
 			END AS BillAmountUSD
 		FROM LocalExportBillInitiationMaster LEBI WITH (NOLOCK)
@@ -174,15 +226,25 @@ BEGIN
 		LEFT JOIN CurrencyRates CR
 			ON CR.CurrencyCode = LEBI.BILL_CCY
 		WHERE LEBI.IsDeleted = 0
+		  AND ISNULL(LEBI.IsCancelled, 0) = 0
 		  AND MD.IsDeleted = 0
 		  AND ISNULL(MD.IsCancelled, 0) = 0
 		  AND ISNULL(MD.GroupSysID, '') <> ''
 	),
-	ExportMade AS (
+	ExportBillSummary AS (
 		SELECT
 			EB.GroupSysID,
-			SUM(EB.BillAmountUSD) AS ExportMadeUSD
+			SUM(EB.BillAmountUSD) AS TotalBillAmountUSD,
+			SUM(
+				CASE
+					WHEN EB.BillAmountUSD - ISNULL(RP.RealizedUSD, 0) > 0
+						THEN EB.BillAmountUSD - ISNULL(RP.RealizedUSD, 0)
+					ELSE 0
+				END
+			) AS DocUnderCollectionUSD
 		FROM ExportBills EB
+		LEFT JOIN RealizedProceeds RP
+			ON RP.EBIID = EB.EBIID
 		GROUP BY EB.GroupSysID
 	),
 	PCLimit AS (
@@ -337,24 +399,21 @@ BEGIN
 						CASE
 							WHEN ISNULL(NULLIF(GLC.CurrencyCode, ''), 'USD') = 'USD' THEN GLC.GroupAmount
 							WHEN ISNULL(@USDRate, 0) > 0 THEN
-								(GLC.GroupAmount * COALESCE(NULLIF(CR_G.GroupRate, 0), NULLIF(CR_G.FallbackRate, 0), 0)) / @USDRate
+								(GLC.GroupAmount * COALESCE(NULLIF(CR_G.MidRate, 0), NULLIF(CR_G.GroupRate, 0), NULLIF(CR_G.BCSellingRate, 0), NULLIF(CR_G.FallbackRate, 0), 0)) / @USDRate
 							ELSE 0
 						END
 					ELSE ISNULL(ELC.TotalMasterValueUSD, 0)
 				END AS DECIMAL(18, 2)
 			) AS TotalExportLCValueUSD,
-			CASE
-				WHEN BTB.GroupSysID IS NOT NULL THEN ISNULL(BTB.BTBAmountUSD, 0)
-				WHEN ISNULL(NULLIF(GLC.CurrencyCode, ''), 'USD') = 'USD' THEN ISNULL(GLC.AmtUtilized, 0)
-				WHEN ISNULL(@USDRate, 0) > 0 THEN
-					(ISNULL(GLC.AmtUtilized, 0) * COALESCE(NULLIF(CR_G.GroupRate, 0), NULLIF(CR_G.FallbackRate, 0), 0)) / @USDRate
-				ELSE 0
-			END AS BTBAmountUSD,
-			CAST(ISNULL(PC.TotalPCDisbursed, 0) AS DECIMAL(18, 2)) AS TotalPCDisbursed,
+			CAST(ISNULL(PC.TotalPCDisbursed, 0) AS DECIMAL(18, 2)) AS TotalPCDisbursedBDT,
 			ELC.ShipmentDate,
 			ELC.ExpiryDate,
 			ISNULL(ELC.BuyerName, '') AS BuyerName,
-			ISNULL(EM.ExportMadeUSD, 0) AS ExportMadeUSD,
+			ISNULL(EBS.TotalBillAmountUSD, 0) AS TotalBillAmountUSD,
+			CAST(
+				ISNULL(EBS.DocUnderCollectionUSD, 0)
+				AS DECIMAL(18, 2)
+			) AS DocUnderCollectionUSD,
 			CAST(ISNULL(PC.PCOutstandingBDT, 0) AS DECIMAL(18, 2)) AS PCOutstandingBDT,
 			CAST(ISNULL(PC.IntendedDisbBDT, 0) AS DECIMAL(18, 2)) AS IntendedDisbBDT,
 			CAST(
@@ -376,10 +435,8 @@ BEGIN
 			ON PC.GroupSysID = GLC.GroupSysID
 		LEFT JOIN ExportLC ELC
 			ON ELC.GroupSysID = GLC.GroupSysID
-		LEFT JOIN BTBUtilized BTB
-			ON BTB.GroupSysID = GLC.GroupSysID
-		LEFT JOIN ExportMade EM
-			ON EM.GroupSysID = GLC.GroupSysID
+		LEFT JOIN ExportBillSummary EBS
+			ON EBS.GroupSysID = GLC.GroupSysID
 		LEFT JOIN PCLimit PL
 			ON PL.GroupSysID = GLC.GroupSysID
 		LEFT JOIN CurrencyRates CR_G
@@ -401,38 +458,64 @@ BEGIN
 			BC.GroupSysID,
 			BC.ExportLCNo,
 			BC.JobNo,
-			BC.TotalExportLCValueUSD AS TotalExportLCValue,
+			BC.TotalExportLCValueUSD,
+			BC.TotalPCDisbursedBDT,
 			CAST(
-				CASE
-					WHEN BC.TotalExportLCValueUSD > 0 THEN (BC.BTBAmountUSD / BC.TotalExportLCValueUSD) * 100.0
-					ELSE 0
-				END AS DECIMAL(18, 4)
-			) AS BTBUtilizedPct,
-			BC.TotalPCDisbursed,
-			CAST(
-				(BC.TotalExportLCValueUSD * @USDRate * (BC.PCEntitlementPct / 100.0)) - BC.TotalPCDisbursed
+				(BC.TotalExportLCValueUSD * @USDRate * (BC.PCEntitlementPct / 100.0)) - BC.TotalPCDisbursedBDT
 				AS DECIMAL(18, 2)
-			) AS RoomForNewPC,
+			) AS PCEntitleAmtBDT,
 			BC.ShipmentDate,
 			BC.ExpiryDate,
 			BC.BuyerName,
 			CAST(
 				CASE
-					WHEN BC.TotalExportLCValueUSD - BC.ExportMadeUSD > 0
-						THEN BC.TotalExportLCValueUSD - BC.ExportMadeUSD
+					WHEN BC.TotalExportLCValueUSD - BC.TotalBillAmountUSD > 0
+						THEN BC.TotalExportLCValueUSD - BC.TotalBillAmountUSD
 					ELSE 0
 				END AS DECIMAL(18, 2)
-			) AS ExportToBeMade,
-			BC.PCOutstandingBDT,
-			CAST(BC.PCOutstandingBDT + BC.IntendedDisbBDT AS DECIMAL(18, 2)) AS OutPlusIntendedDisb,
+			) AS ExportToBeMadeUSD,
+			BC.DocUnderCollectionUSD,
 			CAST(
 				(
 					CASE
-						WHEN BC.TotalExportLCValueUSD - BC.ExportMadeUSD > 0
-							THEN BC.TotalExportLCValueUSD - BC.ExportMadeUSD
+						WHEN BC.TotalExportLCValueUSD - BC.TotalBillAmountUSD > 0
+							THEN BC.TotalExportLCValueUSD - BC.TotalBillAmountUSD
 						ELSE 0
 					END
-				) * @USDRate * (BC.PCEntitlementPct / 100.0)
+				) + BC.DocUnderCollectionUSD
+				AS DECIMAL(18, 2)
+			) AS TotalCoverageUSD,
+			CAST(
+				(
+					(
+						CASE
+							WHEN BC.TotalExportLCValueUSD - BC.TotalBillAmountUSD > 0
+								THEN BC.TotalExportLCValueUSD - BC.TotalBillAmountUSD
+							ELSE 0
+						END
+					) + BC.DocUnderCollectionUSD
+				) * @USDRate
+				AS DECIMAL(18, 2)
+			) AS TotalCoverageBDT,
+			BC.PCOutstandingBDT,
+			CAST(
+				BC.PCOutstandingBDT + (
+					(BC.TotalExportLCValueUSD * @USDRate * (BC.PCEntitlementPct / 100.0)) - BC.TotalPCDisbursedBDT
+				)
+				AS DECIMAL(18, 2)
+			) AS PCOutPlusEntitleAmtBDT,
+			CAST(
+				(
+					(
+						(
+							CASE
+								WHEN BC.TotalExportLCValueUSD - BC.TotalBillAmountUSD > 0
+									THEN BC.TotalExportLCValueUSD - BC.TotalBillAmountUSD
+								ELSE 0
+							END
+						) + BC.DocUnderCollectionUSD
+					) * @USDRate
+				) * (BC.PCEntitlementPct / 100.0)
 				AS DECIMAL(18, 2)
 			) AS CanBeAdjustBDT,
 			BC.PCEntitlementPct,
@@ -444,7 +527,7 @@ BEGIN
 			BC.CustomerName
 		FROM BaseCalc BC
 		WHERE BC.TotalExportLCValueUSD > 0
-		   OR BC.TotalPCDisbursed > 0
+		   OR BC.TotalPCDisbursedBDT > 0
 		   OR BC.PCOutstandingBDT > 0
 		   OR BC.IntendedDisbBDT > 0
 	)
@@ -452,18 +535,21 @@ BEGIN
 		ROW_NUMBER() OVER (ORDER BY FC.CustomerName, FC.JobNo) AS SlNo,
 		FC.ExportLCNo,
 		FC.JobNo,
-		FC.TotalExportLCValue,
-		FC.BTBUtilizedPct,
-		FC.TotalPCDisbursed,
-		FC.RoomForNewPC,
+		FC.TotalExportLCValueUSD,
+		FC.TotalPCDisbursedBDT,
+		FC.PCEntitleAmtBDT,
 		FC.ShipmentDate,
 		FC.ExpiryDate,
 		FC.BuyerName,
-		FC.ExportToBeMade,
+		FC.ExportToBeMadeUSD,
+		FC.DocUnderCollectionUSD,
+		FC.TotalCoverageUSD,
+		FC.TotalCoverageBDT,
 		FC.PCOutstandingBDT,
-		FC.OutPlusIntendedDisb,
+		FC.PCOutPlusEntitleAmtBDT,
 		FC.CanBeAdjustBDT,
-		CAST(FC.CanBeAdjustBDT - FC.OutPlusIntendedDisb AS DECIMAL(18, 2)) AS Difference,
+		CAST(FC.CanBeAdjustBDT - FC.PCOutPlusEntitleAmtBDT AS DECIMAL(18, 2)) AS DifferenceBDT,
+		CAST(FC.CanBeAdjustBDT - FC.PCOutstandingBDT AS DECIMAL(18, 2)) AS NetCanBeDisbursedBDT,
 		FC.PCEntitlementPct,
 		FC.USDRate,
 		FC.IntendedDisbBDT,
@@ -476,4 +562,3 @@ BEGIN
 	ORDER BY FC.CustomerName, FC.JobNo;
 END
 GO
-
