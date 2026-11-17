@@ -1,6 +1,6 @@
 USE [EFA]
 GO
-/****** Object:  StoredProcedure [dbo].[SP_RPT_LoanRegisterPBL]    Script Date: 11/17/2026 12:29:55 PM ******/
+/****** Object:  StoredProcedure [dbo].[SP_RPT_LoanRegisterPBL]    Script Date: 11/17/2026 03:52:00 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -14,40 +14,38 @@ AS
 
 BEGIN
 
-
 SELECT DISTINCT
 	L.Loancreationdate DisbursementDate,
 	CPM.customername AS ClientsName,
 	GLC.GroupRefNo AS GroupRef,
 	ADBranchName=isnull(AdBranch.BranchName,AdBranch2.BranchName)			  ,
 	NonADBranchName	=isnull(Case when Rtrim(Ltrim(isnull(Branch.BranchName,Branch2.BranchName)))=Rtrim(Ltrim(isnull(AdBranch.BranchName,AdBranch2.BranchName))) then '' Else Branch.BranchName END,Case when Rtrim(Ltrim(Branch2.BranchName))=Rtrim(Ltrim(AdBranch2.BranchName)) then '' Else isnull(Branch2.BranchName,Branch2.BranchName) END),
-	--LoanTypeName = CASE WHEN L.LoanAgainst = 'LoanType/FLAB' THEN 'FLAB'
-	--WHEN L.LoanAgainst = 'LoanType/IBPC' THEN 'IBPC'
-	--WHEN L.LoanAgainst = 'LoanType/LEDF' THEN 'LEDF'
-	--WHEN L.LoanAgainst = 'LoanType/PAID' THEN 'PAID'
-	--ELSE EFV.DisplayCode
-	--END,
 	LoanTypeName = EFV.DisplayCode,
-	L.LoanNo + ', ' + isnull(L.ExternalID, '') AS LoanReferenceNo,
-	--Currency = Case When FDAM.Billno is not NULL Then FDAM.Currency
-	--		   Else L.Currency END,
-	Currency = L.LoanCurrency,
-	L.LoanAmount AS DisbursementAmount,
-	L.INTEREST_RATE  AS RateofInterest,
-	 PresentOutstanding=case when l.UBSSyncProcessID=0 
+	CASE 
+		WHEN L.LoanNo LIKE 'LD%' THEN L.LoanNo
+		WHEN L.ExternalID LIKE 'LD%' THEN L.ExternalID
+		WHEN L.LoanNo NOT LIKE 'TF%' AND NULLIF(L.LoanNo, '') IS NOT NULL THEN L.LoanNo
+		WHEN L.ExternalID NOT LIKE 'TF%' AND NULLIF(L.ExternalID, '') IS NOT NULL THEN L.ExternalID
+		WHEN NULLIF(L.ACCOUNT_NUMBER, '') IS NOT NULL THEN L.ACCOUNT_NUMBER
+		ELSE L.LoanNo
+	END AS LoanReferenceNo,
+	Currency = COALESCE(NULLIF(L.LoanCurrency, ''), NULLIF(md.Currency, ''), NULLIF(FDAM.Currency, ''), 'BDT'),
+	ISNULL(NULLIF(L.LoanAmount, 0), L.BillAmount) AS DisbursementAmount,
+	COALESCE(L.INTEREST_RATE, L.RateOnInterest) AS RateofInterest,
+	PresentOutstanding=case when l.UBSSyncProcessID=0 
 		then l.LoanAmount 
 		when l.UBSSyncProcessID=1 and l.AdjustmentAmount=0 
 		then l.LoanAmount
 		else isnull(l.OutstandingAmount, 0) end,
-	L.MATURITY_DATE AS LoanExpiryDate,
+	COALESCE(L.MATURITY_DATE, L.LoanExpiry) AS LoanExpiryDate,
 	OverdueDays=Case when (case when l.UBSSyncProcessID=0 
 		then l.LoanAmount 
 		when l.UBSSyncProcessID=1 and l.AdjustmentAmount=0 
 		then l.LoanAmount
 		else isnull(l.OutstandingAmount, 0) end)>0 and 
-		cast(L.MATURITY_DATE as date )<cast(GETDATE() as date )
-		and L.MATURITY_DATE is not null
-		then DATEDIFF(day,L.MATURITY_DATE,GETDATE())
+		cast(COALESCE(L.MATURITY_DATE, L.LoanExpiry) as date )<cast(GETDATE() as date )
+		and COALESCE(L.MATURITY_DATE, L.LoanExpiry) is not null
+		then DATEDIFF(day,COALESCE(L.MATURITY_DATE, L.LoanExpiry),GETDATE())
 		else '' end,
 	 
 	CPM.CustomerID AS CustomerID, 
@@ -80,19 +78,26 @@ SELECT
 	ADBranchName=AdBranch.BranchName			  ,
 	NonADBranchName	=Case when Rtrim(Ltrim(Branch.BranchName))=Rtrim(Ltrim(AdBranch.BranchName)) then '' Else Branch.BranchName END,
 	'Purchase' AS LoanTypeName,
-	L.LoanNumber + ', ' + isnull(L.ExternalID, '') AS LoanReferenceNo,
-	MD.Currency AS Currency,
-	L.DisbursedAmount AS DisbursementAmount,
-	L.INT_OS  AS RateofInterest,
-	 PresentOutstanding=case when l.UBSSyncProcessID=0 
+	CASE 
+		WHEN L.LoanNumber LIKE 'LD%' THEN L.LoanNumber
+		WHEN L.ExternalID LIKE 'LD%' THEN L.ExternalID
+		WHEN L.LoanNumber NOT LIKE 'TF%' AND NULLIF(L.LoanNumber, '') IS NOT NULL THEN L.LoanNumber
+		WHEN L.ExternalID NOT LIKE 'TF%' AND NULLIF(L.ExternalID, '') IS NOT NULL THEN L.ExternalID
+		WHEN NULLIF(L.Account_Number, '') IS NOT NULL THEN L.Account_Number
+		ELSE L.LoanNumber
+	END AS LoanReferenceNo,
+	COALESCE(NULLIF(MD.Currency, ''), NULLIF(L.AC_CCY, ''), 'BDT') AS Currency,
+	ISNULL(NULLIF(L.DisbursedAmount, 0), L.LoanBasisAmount) AS DisbursementAmount,
+	COALESCE(L.InterestRate, NULLIF(L.INT_OS, 0)) AS RateofInterest,
+	PresentOutstanding=case when l.UBSSyncProcessID=0 
 		then L.DisbursedAmount
-		 when isnull(len(Isnull(CONVERT(DATE,(Select Max(ll.DateAdded) from [EFA]..CustomerVoucherTransDetails ll where ll.AdditionalFilter='Purchase Discount Foreign Document Master' and ll.CreditAccountNo='503010101' and l.ExternalID=ll.AdditionalMasterID)),CONVERT(DATE, PRS.RealizedDate))),0)<1 then L.DisbursedAmount
+		when isnull(len(Isnull(CONVERT(DATE,(Select Max(ll.DateAdded) from [EFA]..CustomerVoucherTransDetails ll where ll.AdditionalFilter='Purchase Discount Foreign Document Master' and ll.CreditAccountNo='503010101' and l.ExternalID=ll.AdditionalMasterID)),CONVERT(DATE, PRS.RealizedDate))),0)<1 then L.DisbursedAmount
 		else isnull(l.TOT_OS, 0) end,
 	L.MaturityDate AS LoanExpiryDate,
 	
 	OverdueDays=Case when (case when l.UBSSyncProcessID=0 
 		then L.DisbursedAmount
-		 when isnull(len(Isnull(CONVERT(DATE,(Select Max(ll.DateAdded) from [EFA]..CustomerVoucherTransDetails ll where ll.AdditionalFilter='Purchase Discount Foreign Document Master' and ll.CreditAccountNo='503010101' and l.ExternalID=ll.AdditionalMasterID)),CONVERT(DATE, PRS.RealizedDate))),0)<1 then L.DisbursedAmount
+		when isnull(len(Isnull(CONVERT(DATE,(Select Max(ll.DateAdded) from [EFA]..CustomerVoucherTransDetails ll where ll.AdditionalFilter='Purchase Discount Foreign Document Master' and ll.CreditAccountNo='503010101' and l.ExternalID=ll.AdditionalMasterID)),CONVERT(DATE, PRS.RealizedDate))),0)<1 then L.DisbursedAmount
 		else isnull(l.TOT_OS, 0) end)>0 and 
 		cast(L.MaturityDate as date )<cast(GETDATE() as date )
 		and L.MaturityDate is not null
@@ -130,18 +135,25 @@ SELECT
 	ADBranchName=AdBranch.BranchName			  ,
 	NonADBranchName	=Case when Rtrim(Ltrim(Branch.BranchName))=Rtrim(Ltrim(AdBranch.BranchName)) then '' Else Branch.BranchName END,
 	'Discount' AS LoanTypeName,
-	L.LoanNumber + ', ' + isnull(L.ExternalID, '') AS LoanReferenceNo,
-	MD.Currency AS Currency,
-	L.DisbursedAmount AS DisbursementAmount,
-	L.INT_OS  AS RateofInterest,
-	 PresentOutstanding=case when l.UBSSyncProcessID=0 
+	CASE 
+		WHEN L.LoanNumber LIKE 'LD%' THEN L.LoanNumber
+		WHEN L.ExternalID LIKE 'LD%' THEN L.ExternalID
+		WHEN L.LoanNumber NOT LIKE 'TF%' AND NULLIF(L.LoanNumber, '') IS NOT NULL THEN L.LoanNumber
+		WHEN L.ExternalID NOT LIKE 'TF%' AND NULLIF(L.ExternalID, '') IS NOT NULL THEN L.ExternalID
+		WHEN NULLIF(L.Account_Number, '') IS NOT NULL THEN L.Account_Number
+		ELSE L.LoanNumber
+	END AS LoanReferenceNo,
+	COALESCE(NULLIF(MD.Currency, ''), NULLIF(L.AC_CCY, ''), 'BDT') AS Currency,
+	ISNULL(NULLIF(L.DisbursedAmount, 0), L.LoanBasisAmount) AS DisbursementAmount,
+	COALESCE(L.InterestRate, NULLIF(L.INT_OS, 0)) AS RateofInterest,
+	PresentOutstanding=case when l.UBSSyncProcessID=0 
 		then L.DisbursedAmount
-		 when isnull(len(CONVERT(DATE,(Select Max(ll.DateAdded) from [EFA]..CustomerVoucherTransDetails ll where ll.AdditionalFilter='Purchase Discount Foreign Document Master' and ll.CreditAccountNo='503010101' and l.ExternalID=ll.AdditionalMasterID))),0)<1 then L.DisbursedAmount
+		when isnull(len(CONVERT(DATE,(Select Max(ll.DateAdded) from [EFA]..CustomerVoucherTransDetails ll where ll.AdditionalFilter='Purchase Discount Foreign Document Master' and ll.CreditAccountNo='503010101' and l.ExternalID=ll.AdditionalMasterID))),0)<1 then L.DisbursedAmount
 		else isnull(l.TOT_OS, 0) end,
 	L.MaturityDate AS LoanExpiryDate,
 	OverdueDays=Case when (case when l.UBSSyncProcessID=0 
 		then L.DisbursedAmount
-		 when isnull(len(CONVERT(DATE,(Select Max(ll.DateAdded) from [EFA]..CustomerVoucherTransDetails ll where ll.AdditionalFilter='Purchase Discount Foreign Document Master' and ll.CreditAccountNo='503010101' and l.ExternalID=ll.AdditionalMasterID))),0)<1 then L.DisbursedAmount
+		when isnull(len(CONVERT(DATE,(Select Max(ll.DateAdded) from [EFA]..CustomerVoucherTransDetails ll where ll.AdditionalFilter='Purchase Discount Foreign Document Master' and ll.CreditAccountNo='503010101' and l.ExternalID=ll.AdditionalMasterID))),0)<1 then L.DisbursedAmount
 		else isnull(l.TOT_OS, 0) end)>0 and 
 		cast(L.MaturityDate as date )<cast(GETDATE() as date )
 		and L.MaturityDate is not null
@@ -157,7 +169,7 @@ FROM PurchaseDiscountForeignDocumentMaster L
 	LEFT JOIN GROUPLC GGLC ON GGLC.GroupSysID = MD.GroupSysID
 	LEFT JOIN SystemManager..BankProfileBranch Branch with(nolock) ON  Branch.branchid = L.BranchID
 	LEFT JOIN SystemManager..BankProfileBranch ADBranch with(nolock) ON  ADBranch.branchid = L.ADBranchID
-	WHERE 
+WHERE 
 	CONVERT(DATE,L.ApplyDate) BETWEEN @FromDate AND @ToDate and
 	isnull(L.IsDeleted,0)=0 and isnull(L.IsExportLoan,0)=0 and isnull(L.IsPurchaseLoanType,0)=0 and L.LoanNumber is not null
 UNION
@@ -171,11 +183,18 @@ SELECT
 	Case when L.PurchaseLoanTypeID = 'DemandLoan' Then 'Demand Loan'
 	     when L.PurchaseLoanTypeID is null Then 'Demand Loan'
 		 Else L.PurchaseLoanTypeID END AS LoanTypeName,
-	L.LoanNumber + ', ' + isnull(L.ExternalID, '')AS LoanReferenceNo,
-	MD2.Currency AS Currency,
-	L.DisbursedAmount AS DisbursementAmount,
-	null  AS RateofInterest,
-	   PresentOutstanding=case when l.UBSSyncProcessID=0 
+	CASE 
+		WHEN L.LoanNumber LIKE 'LD%' THEN L.LoanNumber
+		WHEN L.ExternalID LIKE 'LD%' THEN L.ExternalID
+		WHEN L.LoanNumber NOT LIKE 'TF%' AND NULLIF(L.LoanNumber, '') IS NOT NULL THEN L.LoanNumber
+		WHEN L.ExternalID NOT LIKE 'TF%' AND NULLIF(L.ExternalID, '') IS NOT NULL THEN L.ExternalID
+		WHEN NULLIF(L.Account_Number, '') IS NOT NULL THEN L.Account_Number
+		ELSE L.LoanNumber
+	END AS LoanReferenceNo,
+	COALESCE(NULLIF(MD2.Currency, ''), NULLIF(EBM.CURRENCY_CODE, ''), NULLIF(EBM.BILL_CCY, ''), NULLIF(L.AC_CCY, ''), 'BDT') AS Currency,
+	ISNULL(NULLIF(L.DisbursedAmount, 0), L.LoanBasisAmount) AS DisbursementAmount,
+	COALESCE(L.InterestRate, NULLIF(L.INT_OS, 0)) AS RateofInterest,
+	PresentOutstanding=case when l.UBSSyncProcessID=0 
 		then l.DisbursedAmount 
 		when l.UBSSyncProcessID=1 and l.TOT_OS is null 
 		then l.DisbursedAmount
@@ -190,7 +209,7 @@ SELECT
 		and L.MaturityDate is not null
 		then DATEDIFF(day,L.MaturityDate,GETDATE())
 		else '' end
-	 ,	CPM.CustomerID AS CustomerID,
+	,CPM.CustomerID AS CustomerID,
 	ADbpb.ADBranchID AS ADBranchID,
 	NonADbpb.BranchID AS NonADBranchID,
 	Case When L.PurchaseLoanTypeID is Null THEN 'Demand Loan'
@@ -202,12 +221,6 @@ FROM PurchaseDiscountForeignDocumentMaster L
 	LEFT JOIN ExportBillInitiationMaster EBM ON EBM.EBIID = LL.EBIID
 	LEFT JOIN Masterdoc MD2 ON MD2.MasterDocID = EBM.MasterDocID
 	LEFT JOIN GroupLC GLC ON GLC.GroupSysID = MD2.GroupSysID
-	----delete--
-	--LEFT JOIN (SELECT   B.BranchID ,B.BranchName from SystemManager..BankProfileBranch B
-	--	INNER JOIN (SELECT BranchID FROM SystemManager..CustomerBranchMap GROUP BY BranchID) C ON B.BranchID = C.BranchID
-	--	WHERE IsADCode = 0) NonADbpb ON NonADbpb.BranchID = L.BranchID
-	--LEFT JOIN (SELECT * FROM SystemManager..BankProfileBranch WHERE IsADCode = 1) ADbpb ON ADbpb.ADBranchID = L.BranchID
-	----delete--
 	LEFT JOIN SystemManager..BankProfileBranch NonADbpb with(nolock) ON  NonADbpb.branchid = L.BranchID
 	LEFT JOIN SystemManager..BankProfileBranch ADbpb with(nolock) ON  ADbpb.branchid = L.ADBranchID
 WHERE 
@@ -221,21 +234,33 @@ SELECT
 	ADBranchName=AdBranch.BranchName			  ,
 	NonADBranchName	=Case when Rtrim(Ltrim(Branch.BranchName))=Rtrim(Ltrim(AdBranch.BranchName)) then '' Else Branch.BranchName END,
 	EFV.DisplayCode AS LoanTypeName,
-	L.AdditionalFilter + ', ' + isnull(L.ExternalID, '') AS LoanReferenceNo,
+	CASE 
+		WHEN L.AdditionalFilter LIKE 'LD%' THEN L.AdditionalFilter
+		WHEN L.ExternalID LIKE 'LD%' THEN L.ExternalID
+		WHEN L.AdditionalFilter NOT LIKE 'TF%' AND NULLIF(L.AdditionalFilter, '') IS NOT NULL THEN L.AdditionalFilter
+		WHEN L.ExternalID NOT LIKE 'TF%' AND NULLIF(L.ExternalID, '') IS NOT NULL THEN L.ExternalID
+		ELSE L.AdditionalFilter
+	END AS LoanReferenceNo,
 	'BDT' AS Currency,
-	L.PCAmountTK AS DisbursementAmount,
-	null  AS RateofInterest,
-	 PresentOutstanding=CASE WHEN L.TransactionDate is  null THEN L.PCAmountTK                      
+	ISNULL(NULLIF(L.PCAmountTK, 0), L.PCAmount) AS DisbursementAmount,
+	COALESCE(L.InterestRate, L.PCorSODInterestAmount, NULLIF(L.INT_OS, 0)) AS RateofInterest,
+	PresentOutstanding=CASE WHEN L.TransactionDate is null THEN L.PCAmountTK                      
                     ELSE L.TOT_OS END,
-	L.MATURITY_DATE AS LoanExpiryDate,
+	COALESCE(
+		L.MATURITY_DATE,
+		L.ExpiryDate,
+		L.InterestDueDate,
+		CASE WHEN ISNULL(L.TenorDays, 0) > 0 THEN DATEADD(DAY, L.TenorDays, L.PCDisburseDate) END,
+		MD.ExpiryDate
+	) AS LoanExpiryDate,
 	OverdueDays=Case when (case when l.UBSSyncProcessID=0 
 		then l.PCAmountTK 
 		when l.UBSSyncProcessID=1 and l.TOT_OS is null 
 		then l.PCAmountTK
 		else l.TOT_OS end)>0 and 
-		cast(L.MATURITY_DATE as date )<cast(GETDATE() as date )
-		and L.MATURITY_DATE is not null
-		then DATEDIFF(day,L.MATURITY_DATE,GETDATE())
+		cast(COALESCE(L.MATURITY_DATE, L.ExpiryDate, L.InterestDueDate, CASE WHEN ISNULL(L.TenorDays, 0) > 0 THEN DATEADD(DAY, L.TenorDays, L.PCDisburseDate) END, MD.ExpiryDate) as date )<cast(GETDATE() as date )
+		and COALESCE(L.MATURITY_DATE, L.ExpiryDate, L.InterestDueDate, CASE WHEN ISNULL(L.TenorDays, 0) > 0 THEN DATEADD(DAY, L.TenorDays, L.PCDisburseDate) END, MD.ExpiryDate) is not null
+		then DATEDIFF(day,COALESCE(L.MATURITY_DATE, L.ExpiryDate, L.InterestDueDate, CASE WHEN ISNULL(L.TenorDays, 0) > 0 THEN DATEADD(DAY, L.TenorDays, L.PCDisburseDate) END, MD.ExpiryDate),GETDATE())
 		else '' end,	
 	CPM.CustomerID AS CustomerID,
 	GLC.ADBranchID AS ADBranchID,
@@ -259,29 +284,35 @@ SELECT
 	ADBranchName=AdBranch.BranchName					  ,
 	NonADBranchName	=Case when Rtrim(Ltrim(Branch.BranchName))=Rtrim(Ltrim(AdBranch.BranchName)) then '' Else Branch.BranchName END,
 	EFV.DisplayCode AS LoanTypeName,
-	L.Loannumber + ', ' + isnull(L.ExternalId, '') AS LoanReferenceNo,
-	L.CurrencyCode AS Currency,
+	CASE 
+		WHEN L.Loannumber LIKE 'LD%' THEN L.Loannumber
+		WHEN L.ExternalId LIKE 'LD%' THEN L.ExternalId
+		WHEN L.Loannumber NOT LIKE 'TF%' AND NULLIF(L.Loannumber, '') IS NOT NULL THEN L.Loannumber
+		WHEN L.ExternalId NOT LIKE 'TF%' AND NULLIF(L.ExternalId, '') IS NOT NULL THEN L.ExternalId
+		ELSE L.Loannumber
+	END AS LoanReferenceNo,
+	COALESCE(NULLIF(L.CurrencyCode, ''), NULLIF(md.Currency, ''), 'BDT') AS Currency,
 	L.DisbursedAmount AS DisbursementAmount,
-	L.INTEREST_RATE  AS RateofInterest,
-	 PresentOutstanding=case when l.UBSSyncProcessID=0 
+	COALESCE(L.INTEREST_RATE, NULLIF(L.INT_OS, 0)) AS RateofInterest,
+	PresentOutstanding=case when l.UBSSyncProcessID=0 
 		then l.DisbursedAmount 
 		when l.UBSSyncProcessID=1 and l.TOT_OS is null 
 		then l.DisbursedAmount
 		else l.TOT_OS end,
-	L.MATURITY_DATE AS LoanExpiryDate,
+	COALESCE(L.MATURITY_DATE, localb.MaturityDate, md.ExpiryDate) AS LoanExpiryDate,
 	OverdueDays=Case when (case when l.UBSSyncProcessID=0 
 		then l.DisbursedAmount 
 		when l.UBSSyncProcessID=1 and l.TOT_OS is null 
 		then l.DisbursedAmount
 		else l.TOT_OS end)>0 and 
-		cast(L.MATURITY_DATE as date )<cast(GETDATE() as date )
-		and L.MATURITY_DATE is not null
-		then DATEDIFF(day,L.MATURITY_DATE,GETDATE())
+		cast(COALESCE(L.MATURITY_DATE, localb.MaturityDate, md.ExpiryDate) as date )<cast(GETDATE() as date )
+		and COALESCE(L.MATURITY_DATE, localb.MaturityDate, md.ExpiryDate) is not null
+		then DATEDIFF(day,COALESCE(L.MATURITY_DATE, localb.MaturityDate, md.ExpiryDate),GETDATE())
 		else '' end,	
 	CPM.CustomerID AS CustomerID,
 	ADBranchID=	md.ADBranchID			 ,
 	NonADBranchID=md.BranchID				 ,
-	L.LoanType AS LoanType --EFV/23/45
+	L.LoanType AS LoanType
 FROM LDBCPurchase L
 
 	LEFT JOIN SystemManager..EntityFixedVariables EFV ON EFV.entityid = L.LoanType
@@ -293,8 +324,8 @@ FROM LDBCPurchase L
 	LEFT join [SystemManager]..contacts applicant on applicant.code=isnull(md.Applicant,lcad.applicant)
 	LEFT join [SystemManager]..BankProfileBranch Branch on Branch.BranchID=isnull(localb.BranchID,lcad.branchid)
 	LEFT join [SystemManager]..BankProfileBranch AdBranch on AdBranch.BranchID=isnull(glc.ADBranchID,lcad.adbranchid)
-	
 
 WHERE CONVERT(DATE,L.LoanGenerationDate) BETWEEN @FromDate AND @ToDate
 	and isnull(L.IsDeleted,0)=0 and L.LoanGenerationDate is not null  and L.IsCancelled = 0
 END
+GO
