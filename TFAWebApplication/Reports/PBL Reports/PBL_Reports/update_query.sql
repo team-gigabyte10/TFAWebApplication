@@ -50,3 +50,4 @@ VALUES (1341, 1218, 'FromDate',     'FromDate',     'From Date',   NULL, 'DateTi
        (1342, 1218, 'ToDate',       'ToDate',       'To Date',     NULL, 'DateTime', NULL, 0, NULL, NULL, 0, 2, 0),
        (1343, 1218, 'BranchID', 'BranchName', 'Bank Branch', NULL, 'String',   NULL, 0, 'SELECT DISTINCT BPB.BranchID, BPB.BranchName FROM [SystemManager]..[BankProfileBranch] BPB WITH(NOLOCK) WHERE BPB.IsDeleted = 0 ORDER BY BPB.BranchName ASC', NULL, 0, 3, 0), 
        (1344, 1218, 'CustomerID',       'CustomerName',       ' Customer Name',   NULL, 'String',   NULL, 0, 'SELECT DISTINCT CPM.CustomerName + '' - '' + CPM.CIF AS CustomerName, CPM.CustomerID FROM SystemManager..CustomerProfileMaster CPM WHERE CPM.IsDeleted = 0', NULL, 0, 4, 0);
+
