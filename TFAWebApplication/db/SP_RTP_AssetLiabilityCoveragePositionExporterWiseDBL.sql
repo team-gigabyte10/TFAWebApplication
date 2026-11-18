@@ -1,612 +1,467 @@
 USE [EFA]
 GO
-/****** Object:  StoredProcedure [dbo].[SP_RTP_AssetLiabilityCoveragePositionExporterWiseDBL]    Script Date: 11/18/2026 12:31:07 PM ******/
+/****** Object:  StoredProcedure [dbo].[SP_RTP_AssetLiabilityCoveragePositionExporterWiseDBL]    Script Date: 11/18/2026 05:55:00 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
+
 ALTER PROC [dbo].[SP_RTP_AssetLiabilityCoveragePositionExporterWiseDBL]
 	@BranchID    VARCHAR(50),
 	@CustomerID	 VARCHAR(50)
 AS									
 	-- SP_RTP_AssetLiabilityCoveragePositionExporterWiseDBL 'OBPB/2020/9', '21Aug202C/1379'
 BEGIN
-	DECLARE @Amount2Million DECIMAL(18,6) = 0.000001
-	
-	SELECT CustomerName,BranchID,CustomerID,
-		CASE WHEN SUM(ISNULL(DocumentsUnderCollection,0)) > 0 THEN SUM(ISNULL(DocumentsUnderCollection,0)) ELSE 0 END DocumentsUnderCollection,
-		CASE WHEN SUM(ISNULL(ExportLC_in_hand_ConfirmedSales_contract_in_hand,0)) > 0 THEN SUM(ISNULL(ExportLC_in_hand_ConfirmedSales_contract_in_hand,0)) ELSE 0 END ExportLC_in_hand_ConfirmedSales_contract_in_hand,
-		SUM(BBLCWithTolAmount)BBLCWithTolAmount,SUM(SavedAndGeneratedBTBBillAmount)SavedAndGeneratedBTBBillAmount,SUM(OutstandingSGAmount)OutstandingSGAmount,
-		CASE WHEN SUM(ISNULL(BBLC,0)) > 0 THEN SUM(ISNULL(BBLC,0)) ELSE 0 END BBLC,
-		0 DFCBalance,
-		CASE WHEN SUM(ISNULL(ABP,0)) > 0 THEN SUM(ISNULL(ABP,0)) ELSE 0 END ABP,
-		SUM(DocNotLodgeYet) DocNotLodgeYet,
-		CASE WHEN SUM(ISNULL(SG,0)) > 0 THEN SUM(ISNULL(SG,0)) ELSE 0 END SG,
-		CASE WHEN SUM(ISNULL(EDF,0)) > 0 THEN SUM(ISNULL(EDF,0)) ELSE 0 END EDF,
-		CASE WHEN SUM(ISNULL(ABP_M,0)) > 0 THEN SUM(ISNULL(ABP_M,0)) ELSE 0 END ABP_M,
-		SUM(DocNotLodgeYet_M) DocNotLodgeYet_M,
-		CASE WHEN SUM(ISNULL(SG_M,0)) > 0 THEN SUM(ISNULL(SG_M,0)) ELSE 0 END SG_M,
-		CASE WHEN SUM(ISNULL(EDF_M,0)) > 0 THEN SUM(ISNULL(EDF_M,0)) ELSE 0 END EDF_M,
-		CASE WHEN SUM(ISNULL(FLAB_M,0)) > 0 THEN SUM(ISNULL(FLAB_M,0)) ELSE 0 END FLAB_M,
-		CASE WHEN SUM(ISNULL(PC,0)) > 0 THEN SUM(ISNULL(PC,0)) ELSE 0 END PC,
-		CASE WHEN SUM(ISNULL(FDBP,0)) > 0 THEN SUM(ISNULL(FDBP,0)) ELSE 0 END FDBP,
-		CASE WHEN SUM(ISNULL(Documents_under_collection_unpurchased,0)) > 0 THEN SUM(ISNULL(Documents_under_collection_unpurchased,0)) ELSE 0 END Documents_under_collection_unpurchased,
-		CASE WHEN SUM(ISNULL(Documents_under_collection_unpurchased_M,0)) > 0 THEN SUM(ISNULL(Documents_under_collection_unpurchased_M,0)) ELSE 0 END Documents_under_collection_unpurchased_M,
-		CASE WHEN SUM(ISNULL(OutstandingBBLCAmount,0)) > 0 THEN SUM(ISNULL(OutstandingBBLCAmount,0)) ELSE 0 END OutstandingBBLCAmount, MAX(CURRENCY_CODE) CURRENCY_CODE, MAX(ConvertFactor) ConvertFactor,
-		SUM(ISNULL(TimeLoan, 0)) TimeLoan, SUM(ISNULL(STLWC, 0)) STLWC,
-		CASE WHEN SUM(ISNULL(FLAB,0)) > 0 THEN SUM(ISNULL(FLAB,0)) ELSE 0 END FLAB
-	FROM(
-		SELECT CustomerName,Customer.BranchID,Customer.CustomerID,	
-		ISNULL(ALLData.UnRealizedValue,0)  DocumentsUnderCollection,
-		ISNULL(ALLData.TotalExportLCSCAmount,0) - (ALLData.ExportBillAmount + ALLData.ClosedAmount) ExportLC_in_hand_ConfirmedSales_contract_in_hand ,
-		BBLCWithTolAmount,SavedAndGeneratedBTBBillAmount,OutstandingSGAmount,
-		--ISNULL(ALLData.BBLCWithTolAmount,0) - (ISNULL(ALLData.SavedAndGeneratedBTBBillAmount,0) + ISNULL(ALLData.OutstandingSGAmount,0) + (ALLData.BBLCClosedAmount) + (ALLData.DocNotLodgeYet)) BBLC,
-		ISNULL(ALLData.OutstandingBBLCAmount,0) BBLC,
-		0 DFCBalance,
-		ISNULL(ALLData.OutstandingBTBBillAmount,0) ABP,
-		ISNULL(ALLData.OutstandingSGAmount,0) SG,
-		ISNULL(ALLData.OutstandingEDFAmount,0) EDF,
-		ISNULL(ALLData.OutstandingFLABAmount,0) FLAB,
-		ISNULL(ALLData.OutstandingPCAmount,0) PC,
-		(ISNULL(ALLData.FDBPAmount,0) + ISNULL(ALLData.FDBPLocalAmount,0)) FDBP,
-		ISNULL(ALLData.DocumentsUnderCollectionUnpurchasedAmount,0)Documents_under_collection_unpurchased,
-		(CAST(ISNULL(ALLData.DocumentsUnderCollectionUnpurchasedAmount,0) AS DECIMAL(20,10)) * @Amount2Million) Documents_under_collection_unpurchased_M,
-		(CAST(ISNULL(ALLData.OutstandingBBLCAmount,0) AS DECIMAL(20,10)) * @Amount2Million)  OutstandingBBLCAmount,
-		(CAST(ISNULL(ALLData.OutstandingBTBBillAmount,0) AS DECIMAL(20,10)) * @Amount2Million) ABP_M,
-		(CAST(ISNULL(ALLData.OutstandingSGAmount,0) AS DECIMAL(18,6)) * @Amount2Million) SG_M,
-		(CAST(ISNULL(ALLData.OutstandingEDFAmount,0) AS DECIMAL(20,10)) * @Amount2Million) EDF_M,
-		(CAST(ISNULL(ALLData.OutstandingFLABAmount,0) AS DECIMAL(20,10)) * @Amount2Million) FLAB_M,
-		CURRENCY_CODE, ConvertFactor, 
-		ISNULL(DocNotLodgeYet, 0) DocNotLodgeYet, 
-		ISNULL(DocNotLodgeYet, 0) * @Amount2Million DocNotLodgeYet_M,
-		ISNULL(TimeLoan, 0) TimeLoan,
-		ISNULL(STLWC, 0) STLWC
+	SET NOCOUNT ON;
 
+	-- USD Exchange Rate (BC Selling)
+	DECLARE @USDRate DECIMAL(18,4);
+	SELECT @USDRate = ConvertFactor 
+	FROM SystemManager..CurrencyLatestRate WITH(NOLOCK) 
+	WHERE RateFor = 'BC SELLING' AND CurrencyCode = 'USD';
+
+	IF @USDRate IS NULL OR @USDRate <= 0
+		SET @USDRate = 1.0;
+
+	DECLARE @Amount2Million DECIMAL(18,6) = 0.000001;
+
+	--------------------------------------------------------------------------------------
+	-- Customer and Branch Information
+	--------------------------------------------------------------------------------------
+	DECLARE @CustomerName VARCHAR(250) = '';
+	SELECT TOP 1 @CustomerName = CPM.CustomerName + ' - ' + ISNULL(CPM.CIF, '')
+	FROM SystemManager..CustomerProfileMaster CPM WITH(NOLOCK)
+	WHERE CPM.CustomerID = @CustomerID AND CPM.IsDeleted = 0;
+
+	--------------------------------------------------------------------------------------
+	-- 1. ASSETS: Documents Under Collection (Unrealized Export Bills)
+	--------------------------------------------------------------------------------------
+	DECLARE @DocUnderCollection_USD DECIMAL(18,2) = 0, @DocUnderCollection_BDT DECIMAL(18,2) = 0;
+
+	SELECT 
+		@DocUnderCollection_USD = SUM(DocUSD),
+		@DocUnderCollection_BDT = SUM(DocBDT)
 	FROM (
-
-	--Time loan
-
-	SELECT BranchID,CustomerID,0 ExportBillAmount, 0 UnRealizedValue,0 TotalExportLCSCAmount,0 ClosedAmount,0 BBLCWithTolAmount,0 SavedAndGeneratedBTBBillAmount,
-			       0 OutstandingBTBBillAmount,0 OutstandingSGAmount,0 OutstandingEDFAmount,0 OutstandingPCAmount,
-		           0 FDBPAmount,0 DocumentsUnderCollectionUnpurchasedAmount, 0 BBLCClosedAmount,0 OutstandingBBLCAmount,0 FDBPLocalAmount ,
-					0 DocumentsUnderCollectionUnpurchasedLoclAmount, CURRENCY_CODE, ConvertFactor, 0 DocNotLodgeYet, SUM(ISNULL(TimeLoanOutAmount,0)) TimeLoan, 0 STLWC, 0 OutstandingFLABAmount
-		FROM (
-			SELECT P.CustomerID, P.BranchID, CURRENCY CURRENCY_CODE, ConvertFactor, case when P.UBSSyncProcessID > 0 then TOT_OS * ConvertFactor else p.DisbursedAmount * ConvertFactor end TimeLoanOutAmount
-			FROM PurchaseDiscountForeignDocumentMaster P
-				LEFT JOIN SystemManager..CurrencyLatestRate CLR ON CLR.CurrencyCode = ISNULL(P.CURRENCY, '') AND CLR.RateFor = 'BC SELLING'
-			WHERE P.IsDeleted = 0 AND P.IsExportLoan = 1 AND P.LoanNumber IS NOT NULL AND P.PRODUCT_CODE IN ('TMLN', 'OTML')
-		) TimeLoan
-		WHERE  BranchID = @BranchID AND CustomerID = @CustomerID 
-		GROUP BY BranchID,CustomerID, CURRENCY_CODE, ConvertFactor
-
-		union all
-
-	--STLWC
-
-	SELECT BranchID,CustomerID,0 ExportBillAmount, 0 UnRealizedValue,0 TotalExportLCSCAmount,0 ClosedAmount,0 BBLCWithTolAmount,0 SavedAndGeneratedBTBBillAmount,
-			       0 OutstandingBTBBillAmount,0 OutstandingSGAmount,0 OutstandingEDFAmount,0 OutstandingPCAmount,
-		           0 FDBPAmount,0 DocumentsUnderCollectionUnpurchasedAmount, 0 BBLCClosedAmount,0 OutstandingBBLCAmount,0 FDBPLocalAmount ,
-					0 DocumentsUnderCollectionUnpurchasedLoclAmount, CURRENCY_CODE, ConvertFactor, 0 DocNotLodgeYet, 0 TimeLoan, SUM(ISNULL(TimeLoanOutAmount,0)) STLWC, 0 OutstandingFLABAmount
-		FROM (
-			SELECT P.CustomerID, P.BranchID, CURRENCY CURRENCY_CODE, ConvertFactor, case when P.UBSSyncProcessID > 0 then TOT_OS * ConvertFactor else p.DisbursedAmount * ConvertFactor end TimeLoanOutAmount
-			FROM PurchaseDiscountForeignDocumentMaster P
-				LEFT JOIN SystemManager..CurrencyLatestRate CLR ON CLR.CurrencyCode = ISNULL(P.CURRENCY, '') AND CLR.RateFor = 'BC SELLING'
-			WHERE P.IsDeleted = 0 AND P.IsExportLoan = 1 AND P.LoanNumber IS NOT NULL AND P.PRODUCT_CODE IN ('STLN', 'STLO', 'OSTL')
-		) TimeLoan
-		WHERE  BranchID = @BranchID AND CustomerID = @CustomerID 
-		GROUP BY BranchID,CustomerID, CURRENCY_CODE, ConvertFactor
-
-		union all
-
-	--Start Doc Under Collection
-		 SELECT E.BranchID, E.CustomerCode CustomerID, 0 ExportBillAmount, SUM(ExportBillAmount) UnRealizedValue,0 TotalExportLCSCAmount,0 ClosedAmount,0 BBLCWithTolAmount ,
-					0 SavedAndGeneratedBTBBillAmount, 0 OutstandingBTBBillAmount ,0 OutstandingSGAmount,0 OutstandingEDFAmount,0 OutstandingPCAmount,
-					0 FDBPAmount,0 DocumentsUnderCollectionUnpurchasedAmount, 0 BBLCClosedAmount,0 OutstandingBBLCAmount ,0 FDBPLocalAmount,
-					0 DocumentsUnderCollectionUnpurchasedLoclAmount,
-					CURRENCY_CODE, ConvertFactor, 0 DocNotLodgeYet, 0 TimeLoan, 0 STLWC, 0 OutstandingFLABAmount
-		FROM (
-			SELECT EBIID, (ExportBillAmount * ConvertFactor) ExportBillAmount, CustomerCode, BranchID, CURRENCY_CODE, ConvertFactor
-			FROM ExportBillInitiationMaster E 
-					INNER JOIN (
-						SELECT MasterDocID FROM MasterDoc WHERE GroupSysID IS NOT NULL AND IsDeleted = 0 AND IsCancelled = 0
-					) MD ON MD.MasterDocID = E.MasterDocID
-					LEFT JOIN SystemManager..CurrencyLatestRate CLR ON CLR.CurrencyCode = ISNULL(E.CURRENCY_CODE, '') AND CLR.RateFor = 'BC SELLING'
-				WHERE E.IsDeleted = 0 AND ISNULL(E.IsCancelled, 0) = 0 AND ExportBillNo IS NOT NULL AND IsARVAdjusted = 0
-		) E 
-		left join PRSCreationDistributionDetails d on ISNULL(d.BillRefNo, '') = E.EBIID AND d.PRSNCADID != 'NOT_NCA'
-		WHERE E.BranchID = @BranchID AND E.CustomerCode = @CustomerID AND d.BillRefNo IS NULL
-		GROUP BY E.BranchID, E.CustomerCode, CURRENCY_CODE, ConvertFactor
-					
-		UNION ALL
-
-			SELECT E.BranchID, E.CustomerCode CustomerID, 0 ExportBillAmount, SUM(ExportLocalBillAmount) UnRealizedValue, 0 TotalExportLCSCAmount,0 ClosedAmount,0 BBLCWithTolAmount ,
-					0 SavedAndGeneratedBTBBillAmount, 0 OutstandingBTBBillAmount ,0 OutstandingSGAmount,0 OutstandingEDFAmount,0 OutstandingPCAmount,
-					0 FDBPAmount ,0 DocumentsUnderCollectionUnpurchasedAmount, 0 BBLCClosedAmount ,0 OutstandingBBLCAmount ,0 FDBPLocalAmount,
-					0 DocumentsUnderCollectionUnpurchasedLoclAmount,
-					CURRENCY_CODE, ConvertFactor, 0 DocNotLodgeYet, 0 TimeLoan, 0 STLWC, 0 OutstandingFLABAmount
-			FROM (
-				SELECT EBIID,(ExportLocalBillAmount * ConvertFactor)ExportLocalBillAmount,CustomerCode,BranchID, CURRENCY_CODE, ConvertFactor 
-				FROM LocalExportBillInitiationMaster E
-					 INNER JOIN (SELECT MasterDocID FROM MasterDoc WHERE GroupSysID IS NOT NULL AND IsDeleted = 0 AND IsCancelled = 0
-					 ) MD ON MD.MasterDocID = E.MasterDocID
-					LEFT JOIN SystemManager..CurrencyLatestRate CLR ON CLR.CurrencyCode = ISNULL(E.CURRENCY_CODE, '') AND CLR.RateFor = 'BC SELLING'
-					WHERE E.IsDeleted = 0 AND ISNULL(IsCancelled, 0) = 0 AND ExportLocalBillNo IS NOT NULL
-			) E 
-			left join PRSCreationDistributionDetails d on ISNULL(d.BillRefNo, '') = E.EBIID AND d.PRSNCADID != 'NOT_NCA' 
-		WHERE E.BranchID = @BranchID AND E.CustomerCode = @CustomerID AND d.BillRefNo IS NULL
-		GROUP BY E.BranchID, E.CustomerCode, CURRENCY_CODE, ConvertFactor 
-
-		--End of Doc Under Collection
+		-- Foreign Export Bills
+		SELECT 
+			((E.ExportBillAmount * ISNULL(CLR.ConvertFactor, 1)) / @USDRate) AS DocUSD,
+			(E.ExportBillAmount * ISNULL(CLR.ConvertFactor, 1)) AS DocBDT
+		FROM ExportBillInitiationMaster E WITH(NOLOCK)
+		INNER JOIN MasterDoc MD WITH(NOLOCK) ON MD.MasterDocID = E.MasterDocID AND MD.IsDeleted = 0 AND MD.IsCancelled = 0
+		LEFT JOIN SystemManager..CurrencyLatestRate CLR WITH(NOLOCK) ON CLR.CurrencyCode = ISNULL(E.CURRENCY_CODE, '') AND CLR.RateFor = 'BC SELLING'
+		LEFT JOIN PRSCreationDistributionDetails d WITH(NOLOCK) ON d.BillRefNo = E.EBIID AND d.PRSNCADID != 'NOT_NCA' AND d.IsDeleted = 0
+		WHERE E.IsDeleted = 0 AND ISNULL(E.IsCancelled, 0) = 0 AND E.ExportBillNo IS NOT NULL AND ISNULL(E.IsARVAdjusted, 0) = 0
+		  AND d.BillRefNo IS NULL
+		  AND E.BranchID = @BranchID AND E.CustomerCode = @CustomerID
 
 		UNION ALL
 
-		-- LC Outs
-		select 
-			BankBranchID BranchID, CustomerID, 0 ExportBillAmount, 0 UnRealizedValue, 0 TotalExportLCSCAmount,0 ClosedAmount,0 BBLCWithTolAmount ,
-					0 SavedAndGeneratedBTBBillAmount, 0 OutstandingBTBBillAmount ,0 OutstandingSGAmount,0 OutstandingEDFAmount,0 OutstandingPCAmount,
-					0 FDBPAmount ,0 DocumentsUnderCollectionUnpurchasedAmount, 0 BBLCClosedAmount , SUM(BBLCOutAmount_BDT) OutstandingBBLCAmount ,0 FDBPLocalAmount,
-					0 DocumentsUnderCollectionUnpurchasedLoclAmount,
-					Currency CURRENCY_CODE, ConvertFactor, 0 DocNotLodgeYet, 0 TimeLoan, 0 STLWC, 0 OutstandingFLABAmount
-		from (
-			select 
-				BankBranchID, CustomerID, Year, Currency, ConvertFactor, BBLCID, case when (ISNULL(BBLCAmount, 0) - ISNULL(BillAmount, 0) - ISNULL(SGAmount, 0) - ISNULL(ClosedAmount, 0)) < 0 then 0 else (ISNULL(BBLCAmount, 0) - ISNULL(BillAmount, 0) - ISNULL(SGAmount, 0) - ISNULL(ClosedAmount, 0)) end BBLCOutAmount, case when (ISNULL(BBLCAmount_BDT, 0) - ISNULL(BillAmount_BDT, 0) - ISNULL(SGAmount_BDT, 0) - ISNULL(ClosedAmount_BDT, 0)) < 0 then 0 else (ISNULL(BBLCAmount_BDT, 0) - ISNULL(BillAmount_BDT, 0) - ISNULL(SGAmount_BDT, 0) - ISNULL(ClosedAmount_BDT, 0)) end BBLCOutAmount_BDT
-			from (
-				select
-					g.BankBranchID,
-					g.CustomerID,
-					YEAR(m.IssueDate) Year,
-					m.Currency,
-					clr.ConvertFactor,
-					m.BBLCID,
-					BBLCAmount = m.BBLCAmount + (m.BBLCAmount * Toleranace/100),
-					BBLCAmount_BDT = (m.BBLCAmount + (m.BBLCAmount * Toleranace/100)) * clr.ConvertFactor,
-					ClosedAmount = case when m.IsClosed = 1 then clo.CLOSED_VALUE else 0 end,
-					ClosedAmount_BDT = case when m.IsClosed = 1 then clo.CLOSED_VALUE * clr.ConvertFactor else 0 end,
-					BillAmount = bill.BillAmount,
-					BillAmount_BDT = bill.BillAmount * clr.ConvertFactor,
-					SGAmount = sg.Amount,
-					SGAmount_BDT = sg.Amount * clr.ConvertFactor
-				from BBLCMaster m
-					inner join BBLCIssuance b on b.BBLCID = m.BBLCID
-					inner join GroupLC g on g.GroupSysID = m.GroupSysID
-					left join SystemManager..CustomerProfileMaster cpm on cpm.CustomerID = g.CustomerID
-					left join SystemManager..BankProfileBranch bpb on bpb.BranchID = g.BankBranchID
-					left join SystemManager..CurrencyLatestRate clr on clr.CurrencyCode = m.Currency and clr.RateFor = 'BC SELLING'
-					left join ClosureTransaction clo on clo.UBS_CONT_REF_NO = m.ExternalID and clo.IsDeleted = 0
-					left join (
-						select BBLCID, SUM(BillAmount) BillAmount 
-						from ForeignDocumentAcceptanceMaster
-						where IsDeleted = 0 and IsCancelled = 0 and BillNo is not null
-						group by BBLCID
-					) bill on bill.BBLCID = m.BBLCID
-					left join (
-						select sm.ImportOrBBLCID, SUM(sm.Amount) Amount
-						from ShippingGuaranteeMaster sm
-							left join ForeignDocumentShippingGuaranteeMap fsm on fsm.SGMID = sm.SGMID and fsm.IsDeleted = 0 and fsm.IsCancelled = 0
-						where sm.IsDeleted = 0 and sm.IsCancelled = 0 and sm.SGRefNo is not null and fsm.SGMID is null
-						group by ImportOrBBLCID
+		-- Local Export Bills
+		SELECT 
+			((E.ExportLocalBillAmount * ISNULL(CLR.ConvertFactor, 1)) / @USDRate) AS DocUSD,
+			(E.ExportLocalBillAmount * ISNULL(CLR.ConvertFactor, 1)) AS DocBDT
+		FROM LocalExportBillInitiationMaster E WITH(NOLOCK)
+		INNER JOIN MasterDoc MD WITH(NOLOCK) ON MD.MasterDocID = E.MasterDocID AND MD.IsDeleted = 0 AND MD.IsCancelled = 0
+		LEFT JOIN SystemManager..CurrencyLatestRate CLR WITH(NOLOCK) ON CLR.CurrencyCode = ISNULL(E.CURRENCY_CODE, '') AND CLR.RateFor = 'BC SELLING'
+		LEFT JOIN PRSCreationDistributionDetails d WITH(NOLOCK) ON d.BillRefNo = E.EBIID AND d.PRSNCADID != 'NOT_NCA' AND d.IsDeleted = 0
+		WHERE E.IsDeleted = 0 AND ISNULL(E.IsCancelled, 0) = 0 AND E.ExportLocalBillNo IS NOT NULL
+		  AND d.BillRefNo IS NULL
+		  AND E.BranchID = @BranchID AND E.CustomerCode = @CustomerID
+	) DocColl;
 
-						union
+	SET @DocUnderCollection_USD = ISNULL(@DocUnderCollection_USD, 0);
+	SET @DocUnderCollection_BDT = ISNULL(@DocUnderCollection_BDT, 0);
 
-						select sm.ImportOrBBLCID, SUM(sm.Amount) Amount
-						from ShippingGuaranteeMaster sm
-							inner join ForeignDocumentShippingGuaranteeMap fsm on fsm.SGMID = sm.SGMID
-							inner join ForeignDocumentAcceptanceMaster bm on bm.FDAID = fsm.FDAID
-						where sm.IsDeleted = 0 and sm.IsCancelled = 0 and sm.SGRefNo is not null and bm.BillNo is null
-						group by ImportOrBBLCID
-					) sg on sg.ImportOrBBLCID = m.BBLCID
-				where m.IsDeleted = 0 and m.IsCancelled = 0 and m.BBLCNo is not null and g.IsDeleted = 0 and g.IsClosedGroup = 0
-					and g.BankBranchID = @BranchID and g.CustomerID = @CustomerID
-			) A
-			where (ISNULL(BBLCAmount, 0) - ISNULL(BillAmount, 0) - ISNULL(SGAmount, 0) - ISNULL(ClosedAmount, 0)) > 0
-		) LCOut
-		group by BankBranchID, CustomerID, Currency, ConvertFactor
+	--------------------------------------------------------------------------------------
+	-- 2. ASSETS: Export LC in hand / Confirmed Sales Contract in hand (Condition 3: Live & Unexpired Only)
+	--------------------------------------------------------------------------------------
+	DECLARE @ExportLCInHand_USD DECIMAL(18,2) = 0;
 
-		--end lc outs
-
-
-
-			UNION ALL
-
-
-
-			SELECT BranchID,CustomerID,SUM(ExportBillAmount) ExportBillAmount, 0 UnRealizedValue,SUM(LCAmount)TotalExportLCSCAmount, SUM(ClosedAmount) ClosedAmount,0 BBLCWithTolAmount,
-			           0 SavedAndGeneratedBTBBillAmount, 0 OutstandingBTBBillAmount ,0 OutstandingSGAmount,0 OutstandingEDFAmount,0 OutstandingPCAmount,
-					   0 FDBPAmount ,0 DocumentsUnderCollectionUnpurchasedAmount, 0 BBLCClosedAmount ,0 OutstandingBBLCAmount,0 FDBPLocalAmount ,
-					   0 DocumentsUnderCollectionUnpurchasedLoclAmount,
-					   Currency, ConvertFactor, 0 DocNotLodgeYet, 0 TimeLoan, 0 STLWC, 0 OutstandingFLABAmount
-			FROM(
-				SELECT G.GroupSysID, ((LCAmount + (LCAmount * TolerancePercent / 100 )) * ConvertFactor) LCAmount, G.BankBranchID BranchID, G.CustomerID CustomerID, M.ExternalID, CASE WHEN M.IsClosed = 1 THEN (ISNULL(Closed.CLOSED_VALUE, 0) * ConvertFactor) ELSE 0 END ClosedAmount, M.Currency, ConvertFactor, (Bill.ExportBillAmount * ConvertFactor)  ExportBillAmount
-				FROM MasterDoc M
-					INNER JOIN (SELECT GroupSysID,BankBranchID,CustomerID FROM GroupLC WHERE IsDeleted = 0 AND IsClosedGroup = 0
-					) G ON G.GroupSysID = M.GroupSysID
-					LEFT JOIN (
-						SELECT UBS_CONT_REF_NO, CLOSED_VALUE FROM ClosureTransaction WHERE IsDeleted = 0
-					) Closed ON Closed.UBS_CONT_REF_NO = M.ExternalID
-					LEFT JOIN (
-						select MasterDocID, SUM(ExportBillAmount) ExportBillAmount
-						from (
-							select MasterDocID, ExportBillAmount from ExportBillInitiationMaster where IsDeleted = 0 and ISNULL(IsCancelled, 0) = 0 and ExportBillNo is not null
-							union
-							select MasterDocID, ExportLocalBillAmount from LocalExportBillInitiationMaster where IsDeleted = 0 and ISNULL(IsCancelled, 0) = 0 and ExportLocalBillNo is not null
-						) B
-						GROUP BY MasterDocID
-					) Bill on Bill.MasterDocID = M.MasterDocID
-					LEFT JOIN SystemManager..CurrencyLatestRate CLR ON CLR.CurrencyCode = ISNULL(M.Currency, '') AND CLR.RateFor = 'BC SELLING'
-					WHERE M.IsDeleted = 0 AND M.IsCancelled = 0
-			)MD
-			WHERE  BranchID = @BranchID AND CustomerID = @CustomerID 
-			GROUP BY BranchID,CustomerID, Currency, ConvertFactor
-
-		--End of Export LC in Hand
-
-		UNION ALL 
-
-			SELECT BranchID,CustomerID,0 ExportBillAmount, 0 UnRealizedValue,0 TotalExportLCSCAmount,0 ClosedAmount,0 BBLCWithTolAmount,0 SavedAndGeneratedBTBBillAmount,
-			           0 OutstandingBTBBillAmount,0 OutstandingSGAmount,0 OutstandingEDFAmount,0 OutstandingPCAmount,
-					   0 FDBPAmount ,0 DocumentsUnderCollectionUnpurchasedAmount , 0 BBLCClosedAmount,0 OutstandingBBLCAmount  ,0 FDBPLocalAmount,
-					   0 DocumentsUnderCollectionUnpurchasedLoclAmount, Currency, ConvertFactor,
-					   SUM(OnlySavedBills) DocNotLodgeYet, 0 TimeLoan, 0 STLWC, 0 OutstandingFLABAmount
+	SELECT @ExportLCInHand_USD = SUM(LCOutUSD)
+	FROM (
+		SELECT 
+			CASE 
+				WHEN ((M.LCAmount + (M.LCAmount * ISNULL(M.TolerancePercent, 0) / 100.0)) - (ISNULL(Bill.ExportBillAmount, 0) + ISNULL(Closed.CLOSED_VALUE, 0))) > 0
+				THEN (((M.LCAmount + (M.LCAmount * ISNULL(M.TolerancePercent, 0) / 100.0)) - (ISNULL(Bill.ExportBillAmount, 0) + ISNULL(Closed.CLOSED_VALUE, 0))) * ISNULL(CLR.ConvertFactor, 1)) / @USDRate
+				ELSE 0 
+			END AS LCOutUSD
+		FROM MasterDoc M WITH(NOLOCK)
+		INNER JOIN GroupLC G WITH(NOLOCK) ON G.GroupSysID = M.GroupSysID AND G.IsDeleted = 0 AND G.IsClosedGroup = 0
+		LEFT JOIN SystemManager..CurrencyLatestRate CLR WITH(NOLOCK) ON CLR.CurrencyCode = ISNULL(M.Currency, '') AND CLR.RateFor = 'BC SELLING'
+		LEFT JOIN (
+			SELECT UBS_CONT_REF_NO, SUM(ISNULL(CLOSED_VALUE, 0)) AS CLOSED_VALUE 
+			FROM ClosureTransaction WITH(NOLOCK) WHERE IsDeleted = 0 GROUP BY UBS_CONT_REF_NO
+		) Closed ON Closed.UBS_CONT_REF_NO = M.ExternalID
+		LEFT JOIN (
+			SELECT MasterDocID, SUM(BillAmt) AS ExportBillAmount
 			FROM (
-				SELECT ISNULL(BillAmount,0) * ConvertFactor AS OnlySavedBills,
-					   BranchID,CustomerID, FDAM.Currency, ConvertFactor 
-				FROM (
-					SELECT ISNULL(BillAmount,0) AS BillAmount,BBLCID,FDAID,BranchID,CustomerID,Currency 
-					FROM ForeignDocumentAcceptanceMaster 
-					WHERE IsDeleted = 0 AND IsCancelled = 0 AND BillNo IS NULL
-				) FDAM 
-					LEFT JOIN SystemManager..CurrencyLatestRate CLR ON CLR.CurrencyCode = ISNULL(FDAM.Currency, '') AND CLR.RateFor = 'BC SELLING'
-					INNER JOIN (SELECT BBLCID FROM BBLCMaster WHERE IsDeleted = 0 AND IsCancelled = 0 AND BBLCNo IS NOT NULL
-					) BBLCM ON BBLCM.BBLCID = FDAM.BBLCID 	   
-			)A
-			WHERE  BranchID = @BranchID AND CustomerID = @CustomerID 
-			GROUP BY BranchID,CustomerID, Currency, ConvertFactor
+				SELECT MasterDocID, ExportBillAmount AS BillAmt FROM ExportBillInitiationMaster WITH(NOLOCK) WHERE IsDeleted = 0 AND ISNULL(IsCancelled, 0) = 0 AND ExportBillNo IS NOT NULL
+				UNION ALL
+				SELECT MasterDocID, ExportLocalBillAmount AS BillAmt FROM LocalExportBillInitiationMaster WITH(NOLOCK) WHERE IsDeleted = 0 AND ISNULL(IsCancelled, 0) = 0 AND ExportLocalBillNo IS NOT NULL
+			) B
+			GROUP BY MasterDocID
+		) Bill ON Bill.MasterDocID = M.MasterDocID
+		WHERE M.IsDeleted = 0 AND M.IsCancelled = 0
+		  -- Condition 3: Live LC/Contract which have valid, unexpired expiry date
+		  AND M.ExpiryDate IS NOT NULL 
+		  AND CAST(M.ExpiryDate AS DATE) >= CAST(GETDATE() AS DATE)
+		  AND G.BankBranchID = @BranchID AND G.CustomerID = @CustomerID
+	) ExpLC;
 
-           --END OF DocNotLodge
+	SET @ExportLCInHand_USD = ISNULL(@ExportLCInHand_USD, 0);
 
-			UNION ALL 
+	--------------------------------------------------------------------------------------
+	-- 3. ASSETS: FC Held Balance / DFC Balance
+	--------------------------------------------------------------------------------------
+	DECLARE @FCHeldBalance_USD DECIMAL(18,2) = 0, @DFCBalance_BDT DECIMAL(18,2) = 0;
 
+	--------------------------------------------------------------------------------------
+	-- 4. LIABILITIES: BTB LC Outstanding (BBLC Amount - Bills - SG - Closed)
+	--------------------------------------------------------------------------------------
+	DECLARE @BTBLC_USD DECIMAL(18,2) = 0, @BBLCOut_BDT DECIMAL(18,2) = 0;
 
-			SELECT BankBranchID BranchID, CustomerID, 0 ExportBillAmount, 0 UnRealizedValue,0 TotalExportLCSCAmount,0 ClosedAmount, SUM(LCAmount) BBLCWithTolAmount,
-			           0 SavedAndGeneratedBTBBillAmount, 0 OutstandingBTBBillAmount ,0 OutstandingSGAmount,0 OutstandingEDFAmount,0 OutstandingPCAmount,
-					   0 FDBPAmount,0 DocumentsUnderCollectionUnpurchasedAmount,SUM(ClosedAmount) BBLCClosedAmount ,0 OutstandingBBLCAmount,0 FDBPLocalAmount ,
-					   0 DocumentsUnderCollectionUnpurchasedLoclAmount,
-					   Currency, ConvertFactor, 0 DocNotLodgeYet, 0 TimeLoan, 0 STLWC, 0 OutstandingFLABAmount
-			FROM (
-				SELECT BankBranchID, ((BBLCAmount + (BBLCAmount * Toleranace / 100 )) * ConvertFactor) LCAmount,
-					   B.GroupSysID, GLC.CustomerID, B.ExternalID, CASE WHEN B.IsClosed = 1 THEN (ISNULL(Closed.CLOSED_VALUE, 0) * ConvertFactor) ELSE 0 END ClosedAmount, Currency, ConvertFactor 
-				FROM BBLCMaster B (NOLOCK)
-					   INNER JOIN (SELECT * FROM GroupLC WHERE IsDeleted = 0 AND IsClosedGroup = 0) GLC ON GLC.GroupSysID = B.GroupSysID
-					   LEFT JOIN (SELECT UBS_CONT_REF_NO, CLOSED_VALUE  FROM ClosureTransaction  WHERE IsDeleted = 0 
-					   ) Closed ON Closed.UBS_CONT_REF_NO = B.ExternalID
-					   LEFT JOIN SystemManager..CurrencyLatestRate CLR ON CLR.CurrencyCode = ISNULL(B.Currency, '') AND CLR.RateFor = 'BC SELLING'
-				WHERE B.IsDeleted = 0 AND B.IsCancelled = 0 AND B.BBLCNo IS NOT NULL
-			)BBLC	
-			WHERE  BankBranchID = @BranchID AND CustomerID = @CustomerID 						
-			GROUP BY BankBranchID,CustomerID, Currency, ConvertFactor
-
-	--END OF BBLCWithTol
-
-			UNION ALL 
-
-			SELECT BranchID,CustomerID,0 ExportBillAmount, 0 UnRealizedValue,0 TotalExportLCSCAmount,0 ClosedAmount,0 BBLCWithTolAmount,0 SavedAndGeneratedBTBBillAmount,
-			           0 OutstandingBTBBillAmount,0 OutstandingSGAmount,0 OutstandingEDFAmount,0 OutstandingPCAmount,
-					   0 FDBPAmount ,0 DocumentsUnderCollectionUnpurchasedAmount , 0 BBLCClosedAmount,0 OutstandingBBLCAmount ,0 FDBPLocalAmount,
-					   0 DocumentsUnderCollectionUnpurchasedLoclAmount,
-					   Currency, ConvertFactor, 0 DocNotLodgeYet, 0 TimeLoan, 0 STLWC, 0 OutstandingFLABAmount
-			FROM (
-				SELECT BranchID,CustomerID,BBLCAmount, Currency, ConvertFactor 
-				FROM  (
-					SELECT BranchID,CustomerID,BBLCID,Currency,(BBLCAmount * ConvertFactor)BBLCAmount, ConvertFactor 
-					FROM BBLCMaster B
-					   INNER JOIN (SELECT BankBranchID BranchID,CustomerID,GroupSysID FROM GroupLC WHERE IsDeleted = 0 and IsClosedGroup = 0
-					   ) G ON B.GroupSysID = G.GroupSysID
-					   LEFT JOIN SystemManager..CurrencyLatestRate CLR ON CLR.CurrencyCode = ISNULL(B.Currency, '') AND CLR.RateFor = 'BC SELLING'
-					   WHERE B.IsDeleted = 0 AND IsCancelled = 0 AND BBLCNo IS NOT NULL
-					 ) BBLCM 
-						inner JOIN(
-							SELECT BBLCID FROM ForeignDocumentAcceptanceMaster 
-							WHERE IsDeleted = 0 AND IsCancelled = 0 AND BillNo IS NOT NULL
-						) FDAM ON FDAM.BBLCID = BBLCM.BBLCID
-					   WHERE FDAM.BBLCID IS NULL
-					)A
-					WHERE  BranchID = @BranchID AND CustomerID = @CustomerID 
-					GROUP BY BranchID,CustomerID, Currency, ConvertFactor
-
-			--END OF OutstandingBBLC
-
-			UNION ALL
-
-			SELECT BranchID,CustomerID,0 ExportBillAmount, 0 UnRealizedValue,0 TotalExportLCSCAmount,0 ClosedAmount,0 BBLCWithTolAmount,SUM(BillAmount)SavedAndGeneratedBTBBillAmount,
-			           0 OutstandingBTBBillAmount ,0 OutstandingSGAmount,0 OutstandingEDFAmount,0 OutstandingPCAmount,0 FDBPAmount ,
-					   0 DocumentsUnderCollectionUnpurchasedAmount, 0 BBLCClosedAmount ,0 OutstandingBBLCAmount ,0 FDBPLocalAmount,
-					   0 DocumentsUnderCollectionUnpurchasedLoclAmount, Currency, ConvertFactor, 0 DocNotLodgeYet, 0 TimeLoan, 0 STLWC, 0 OutstandingFLABAmount
-			   FROM (
-					SELECT (ISNULL(BillAmount,0) * ConvertFactor) BillAmount,ConvertFactor,CustomerID ,BranchID,Currency
-					FROM (
-						SELECT (ISNULL(BillAmount,0)) AS BillAmount,BBLCID,CustomerID,BranchID,Currency 
-						FROM ForeignDocumentAcceptanceMaster 
-					   WHERE IsDeleted = 0 AND IsCancelled = 0 AND BillNo IS NOT NULL 
-					) FDAM 
-					   INNER JOIN (SELECT BBLCID FROM BBLCMaster WHERE IsDeleted = 0 AND IsCancelled = 0 AND BBLCAmount > 0 AND BBLCNo IS NOT NULL
-						) BBLCM ON BBLCM.BBLCID = FDAM.BBLCID
-					   LEFT JOIN SystemManager..CurrencyLatestRate CLR ON CLR.CurrencyCode = ISNULL(FDAM.Currency, '') AND CLR.RateFor = 'BC SELLING')A 
-					WHERE BranchID = @BranchID AND CustomerID = @CustomerID 
-					GROUP BY BranchID,CustomerID, Currency, ConvertFactor
-
-			--END OF SavedAndGeneratedBTBBills
-
-		 UNION ALL 
-
-			SELECT BranchID,CustomerID,0 ExportBillAmount, 0 UnRealizedValue,0 TotalExportLCSCAmount,0 ClosedAmount,0 BBLCWithTolAmount,0 SavedAndGeneratedBTBBillAmount,
-			           SUM(ISNULL(OutstandingBTBBills,0))OutstandingBTBBillAmount,0 OutstandingSGAmount,0 OutstandingEDFAmount,0 OutstandingPCAmount,
-					   0 FDBPAmount ,0 DocumentsUnderCollectionUnpurchasedAmount , 0 BBLCClosedAmount,0 OutstandingBBLCAmount  ,0 FDBPLocalAmount,
-					   0 DocumentsUnderCollectionUnpurchasedLoclAmount, Currency, ConvertFactor, 0 DocNotLodgeYet, 0 TimeLoan, 0 STLWC, 0 OutstandingFLABAmount
-			FROM (
-				SELECT ((ISNULL(BillAmount,0) * ConvertFactor) - ISNULL(FDPM.PaymentAmount,0)) AS OutstandingBTBBills,
-					   BranchID,CustomerID, FDAM.Currency, ConvertFactor 
-				FROM (
-					SELECT ISNULL(BillAmount,0) AS BillAmount,BBLCID,FDAID,BranchID,CustomerID,Currency 
-					FROM ForeignDocumentAcceptanceMaster 
-					WHERE IsDeleted = 0 AND IsCancelled = 0 AND BillNo IS NOT NULL AND BillAmount > 0 AND IsImportLC = 0
-				) FDAM 
-					   LEFT JOIN SystemManager..CurrencyLatestRate CLR ON CLR.CurrencyCode = ISNULL(FDAM.Currency, '') AND CLR.RateFor = 'BC SELLING'
-					   INNER JOIN (SELECT BBLCID FROM BBLCMaster WHERE IsDeleted = 0 AND IsCancelled = 0 AND BBLCAmount > 0 AND BBLCNo IS NOT NULL
-					  ) BBLCM ON BBLCM.BBLCID = FDAM.BBLCID 
-					   LEFT JOIN  (
-							SELECT M.FDAID,  SUM(M.PaymentAmount) PaymentAmount,Currency 
-							FROM (
-								SELECT  M.FDAID,  (M.PaymentAmount * ConvertFactor) PaymentAmount,Currency 
-								FROM ForeignDocumentPaymentMaster M
-									LEFT JOIN SystemManager..CurrencyLatestRate CLR ON CLR.CurrencyCode = ISNULL(M.Currency, '') AND CLR.RateFor = 'BC SELLING' 
-									WHERE M.IsDeleted = 0 AND ISNULL(M.PaymentAmount, 0) > 0
-						) M
-					   GROUP BY M.FDAID,Currency)FDPM ON FDPM.FDAID = FDAM.FDAID
-					  )A
-					   WHERE  BranchID = @BranchID AND CustomerID = @CustomerID 
-					   GROUP BY BranchID,CustomerID, Currency, ConvertFactor
-
-           --END OF OutstandingBTBBills
-
-			UNION ALL 
-
-			SELECT BranchID,CustomerID,0 ExportBillAmount, 0 UnRealizedValue,0 TotalExportLCSCAmount,0 ClosedAmount,0 BBLCWithTolAmount,0 SavedAndGeneratedBTBBillAmount,
-			         0 OutstandingBTBBillAmount,SUM(Amount) OutstandingSGAmount,0 OutstandingEDFAmount,0 OutstandingPCAmount,0 FDBPAmount,
-					 0 DocumentsUnderCollectionUnpurchasedAmount , 0 BBLCClosedAmount ,0 OutstandingBBLCAmount ,0 FDBPLocalAmount,
-					 0 DocumentsUnderCollectionUnpurchasedLoclAmount, Currency, ConvertFactor, 0 DocNotLodgeYet, 0 TimeLoan, 0 STLWC, 0 OutstandingFLABAmount
-			FROM (
-				SELECT Amount * ConvertFactor Amount,BranchID,CustomerID, Currency, ConvertFactor 
-				FROM (
-					SELECT SGMID,Amount,BranchID,CustomerID,ImportOrBBLCID,Currency 
-		            FROM ShippingGuaranteeMaster 
-					WHERE IsDeleted = 0 AND IsCancelled = 0 AND SGRefNo IS NOT NULL
-				)SGM
-					 INNER JOIN (
-						SELECT BBLCID FROM BBLCMaster WHERE IsDeleted = 0 AND IsCancelled = 0
-					 ) BBLCM ON BBLCM.BBLCID = SGM.ImportOrBBLCID
-					 LEFT JOIN (
-						SELECT SGMID FROM ForeignDocumentShippingGuaranteeMap B WHERE IsDeleted = 0 AND IsCancelled = 0
-					) FSGM ON FSGM.SGMID = SGM.SGMID
-					 LEFT JOIN SystemManager..CurrencyLatestRate CLR ON CLR.CurrencyCode = ISNULL(SGM.Currency, '') AND CLR.RateFor = 'BC SELLING'
-					 WHERE FSGM.SGMID IS NULL
-				)A 
-				WHERE  BranchID = @BranchID AND CustomerID = @CustomerID 
-				GROUP BY BranchID,CustomerID, Currency, ConvertFactor
-							
-
-		 --END OF OutstandingSG
-
-			UNION ALL 
-
-
-			SELECT BranchID,CustomerID,0 ExportBillAmount, 0 UnRealizedValue,0 TotalExportLCSCAmount,0 ClosedAmount,0 BBLCWithTolAmount,0 SavedAndGeneratedBTBBillAmount,
-			       0 OutstandingBTBBillAmount,0 OutstandingSGAmount,
-				   SUM(ISNULL(EDFLoan.LoanAmount,0)) OutstandingEDFAmount,
-				   0 OutstandingPCAmount,0 FDBPAmount ,0 DocumentsUnderCollectionUnpurchasedAmount, 0 BBLCClosedAmount ,0 OutstandingBBLCAmount ,0 FDBPLocalAmount,
-					0 DocumentsUnderCollectionUnpurchasedLoclAmount, EDFLoan.Currency, ConvertFactor, 0 DocNotLodgeYet, 0 TimeLoan, 0 STLWC, 0 OutstandingFLABAmount
-			FROM (
-				SELECT (TOT_OS * ConvertFactor) LoanAmount,LoanNo,BBLCID,BankBranchID BranchID,Customer CustomerID,Currency, ConvertFactor 
-				FROM LoanCreation L
-				   LEFT JOIN SystemManager..CurrencyLatestRate CLR ON CLR.CurrencyCode = ISNULL(L.Currency, '') AND CLR.RateFor = 'BC SELLING'
-				   WHERE L.IsDeleted = 0 AND Product = 'LEDF' AND LoanNo IS NOT NULL
-				)EDFLoan
-				INNER JOIN (SELECT * FROM BBLCMaster WHERE IsDeleted = 0 AND IsCancelled = 0 and BBLCNo is not null) BBLCM ON BBLCM.BBLCID = EDFLoan.BBLCID
-			WHERE BranchID = @BranchID AND CustomerID = @CustomerID 
-		    GROUP BY BranchID,CustomerID, EDFLoan.Currency, ConvertFactor
-					
-
-		--END OF OutstandingEDF
-		Union ALL
-		 
-
-
-			SELECT BranchID,CustomerID,0 ExportBillAmount, 0 UnRealizedValue,0 TotalExportLCSCAmount,0 ClosedAmount,0 BBLCWithTolAmount,0 SavedAndGeneratedBTBBillAmount,
-			       0 OutstandingBTBBillAmount,0 OutstandingSGAmount,
-				  0 OutstandingEDFAmount,
-				   0 OutstandingPCAmount,0 FDBPAmount ,0 DocumentsUnderCollectionUnpurchasedAmount, 0 BBLCClosedAmount ,0 OutstandingBBLCAmount ,0 FDBPLocalAmount,
-					0 DocumentsUnderCollectionUnpurchasedLoclAmount, EDFLoan.Currency, ConvertFactor, 0 DocNotLodgeYet, 0 TimeLoan, 0 STLWC,
-					 SUM(ISNULL(EDFLoan.LoanAmount,0)) OutstandingFLABAmount
-			FROM (
-				SELECT (TOT_OS * ConvertFactor) LoanAmount,LoanNo,BBLCID,BankBranchID BranchID,Customer CustomerID,Currency, ConvertFactor 
-				FROM LoanCreation L
-				   LEFT JOIN SystemManager..CurrencyLatestRate CLR ON CLR.CurrencyCode = ISNULL(L.Currency, '') AND CLR.RateFor = 'BC SELLING'
-				   WHERE L.IsDeleted = 0 AND Product = 'FLAB' AND LoanNo IS NOT NULL
-				)EDFLoan
-				INNER JOIN (SELECT * FROM BBLCMaster WHERE IsDeleted = 0 AND IsCancelled = 0 and BBLCNo is not null) BBLCM ON BBLCM.BBLCID = EDFLoan.BBLCID
-			WHERE BranchID = @BranchID AND CustomerID = @CustomerID 
-		    GROUP BY BranchID,CustomerID, EDFLoan.Currency, ConvertFactor
-					
-
-		--END OF OutstandingFLAB
-			UNION ALL 
-
-			SELECT BranchID,CustomerID,0 ExportBillAmount, 0 UnRealizedValue,0 TotalExportLCSCAmount,0 ClosedAmount,0 BBLCWithTolAmount,0 SavedAndGeneratedBTBBillAmount,
-			       0 OutstandingBTBBillAmount,0 OutstandingSGAmount,0 OutstandingEDFAmount,
-				   SUM(ISNULL(TOT_OS, 0)) OutstandingPCAmount,
-				   0 FDBPAmount ,0 DocumentsUnderCollectionUnpurchasedAmount, 0 BBLCClosedAmount ,0 OutstandingBBLCAmount ,0 FDBPLocalAmount,
-					0 DocumentsUnderCollectionUnpurchasedLoclAmount, Currency, ConvertFactor, 0 DocNotLodgeYet, 0 TimeLoan, 0 STLWC, 0 OutstandingFLABAmount
-			FROM (
-				SELECT case when P.UBSSyncProcessID > 0 then P.TOT_OS else P.PCAmountTK end TOT_OS,BranchID,CustomerID, Currency, 1 ConvertFactor
-				FROM PCDisbursementMaster P
-		        WHERE P.IsDeleted = 0
-			) PCDM
-		    WHERE  BranchID = @BranchID AND CustomerID = @CustomerID 
-			GROUP BY BranchID,CustomerID, Currency, ConvertFactor
-
-		--END OF OutstandingPC
-
-			UNION ALL 
-
-			SELECT FDBP.BranchID,CustomerID,0 ExportBillAmount, 0 UnRealizedValue,0 TotalExportLCSCAmount,0 ClosedAmount,0 BBLCWithTolAmount,0 SavedAndGeneratedBTBBillAmount,
-			       0 OutstandingBTBBillAmount,0 OutstandingSGAmount,0 OutstandingEDFAmount,0 OutstandingPCAmount,
-		           SUM(ISNULL(DisbursedAmount,0))FDBPAmount,0 DocumentsUnderCollectionUnpurchasedAmount, 0 BBLCClosedAmount,0 OutstandingBBLCAmount  ,0 FDBPLocalAmount,
-					0 DocumentsUnderCollectionUnpurchasedLoclAmount, CURRENCY_CODE, ConvertFactor, 0 DocNotLodgeYet, 0 TimeLoan, 0 STLWC, 0 OutstandingFLABAmount
-		    FROM (
-				SELECT PDFDM.EBIID,(DisbursedAmount * ConvertFactor) DisbursedAmount,BranchID,CustomerID, CURRENCY_CODE, ConvertFactor
-		        FROM (
-					SELECT EBIID,SUM(ISNULL(DisbursedAmount,0))DisbursedAmount,MAX(BranchID)BranchID,MAX(CustomerID)CustomerID 
-					FROM (
-						SELECT  EBIID, ISNULL(DisbursedAmount,0) DisbursedAmount, BranchID, CustomerID 
-						FROM PurchaseDiscountForeignDocumentMaster P
-						WHERE P.IsDeleted = 0 AND IsCancelled = 0 AND LoanNumber IS NOT NULL and P.EBIID IS NOT NULL AND ISNULL(P.IsExportLoan, 0) = 0
-					) PDFD 
-					GROUP BY EBIID
-				) PDFDM
-				INNER JOIN (SELECT EBIID,CURRENCY_CODE,ConvertFactor FROM ExportBillInitiationMaster E
-				   LEFT JOIN SystemManager..CurrencyLatestRate CLR ON CLR.CurrencyCode = ISNULL(E.CURRENCY_CODE, '') AND CLR.RateFor = 'BC SELLING' 
-				   WHERE  E.IsDeleted = 0 AND IsCancelled = 0 AND ExportBillNo IS NOT NULL
-				  ) E ON E.EBIID = PDFDM.EBIID
-				)FDBP
-				LEFT JOIN PRSCreationDistributionDetails d on isnull(d.BillRefNo, '') = isnull(FDBP.EBIID, '') AND d.PRSNCADID != 'NOT_NCA'
-				WHERE  FDBP.BranchID = @BranchID AND FDBP.CustomerID = @CustomerID AND d.BillRefNo is null
-				GROUP BY FDBP.BranchID,CustomerID, CURRENCY_CODE, ConvertFactor
-
-		--END OF OutstandingExportBillPurchasedAndDiscount
-
-			UNION ALL 
-
-			SELECT BranchID,CustomerID,0 ExportBillAmount, 0 UnRealizedValue,0 TotalExportLCSCAmount,0 ClosedAmount,0 BBLCWithTolAmount,0 SavedAndGeneratedBTBBillAmount,
-			       0 OutstandingBTBBillAmount,0 OutstandingSGAmount,0 OutstandingEDFAmount,0 OutstandingPCAmount,
-		           0 FDBPAmount,0 DocumentsUnderCollectionUnpurchasedAmount, 0 BBLCClosedAmount,0 OutstandingBBLCAmount,SUM(ISNULL(DisbursedAmount,0))FDBPLocalAmount ,
-					0 DocumentsUnderCollectionUnpurchasedLoclAmount, CURRENCY_CODE, ConvertFactor, 0 DocNotLodgeYet, 0 TimeLoan, 0 STLWC, 0 OutstandingFLABAmount
-		    FROM (
-				SELECT PDFDM.EBIID,(DisbursedAmount * ConvertFactor) DisbursedAmount,BranchID,CustomerCode CustomerID, CURRENCY_CODE, ConvertFactor 
-		        FROM (
-					SELECT EBIID,SUM(ISNULL(DisbursedAmount,0))DisbursedAmount 
-					FROM (
-						SELECT  EBIID,ISNULL(DisbursedAmount,0) DisbursedAmount 
-						FROM LDBCPurchase P
-						WHERE P.IsDeleted = 0 AND IsCancelled = 0 AND LoanNumber IS NOT NULL AND ISNULL(DisbursedAmount,0) > 0
-					) PDFD 
-					WHERE ISNULL(DisbursedAmount,0) > 0 GROUP BY EBIID
-				) PDFDM
-				   INNER JOIN (SELECT EBIID,CURRENCY_CODE,ConvertFactor,BranchID,CustomerCode  FROM LocalExportBillInitiationMaster E
-				   LEFT JOIN SystemManager..CurrencyLatestRate CLR ON CLR.CurrencyCode = ISNULL(E.CURRENCY_CODE, '') AND CLR.RateFor = 'BC SELLING' 
-				   WHERE  E.IsDeleted = 0 AND IsCancelled = 0 AND ExportLocalBillNo IS NOT NULL AND 
-				   ExportLocalBillAmount > 0
-				 ) E ON E.EBIID = PDFDM.EBIID
-			)FDBP
-			WHERE  BranchID = @BranchID AND CustomerID = @CustomerID 
-			GROUP BY BranchID,CustomerID, CURRENCY_CODE, ConvertFactor
-
-		--END OF OutstandingLocalExportBillPurchasedAndDiscount
-
-			UNION ALL 
-
-			SELECT BranchID,CustomerID,0 ExportBillAmount, 0 UnRealizedValue,0 TotalExportLCSCAmount,0 ClosedAmount,0 BBLCWithTolAmount,0 SavedAndGeneratedBTBBillAmount,
-			       0 OutstandingBTBBillAmount,0 OutstandingSGAmount,0 OutstandingEDFAmount,0 OutstandingPCAmount,
-		           0 FDBPAmount,0 DocumentsUnderCollectionUnpurchasedAmount, 0 BBLCClosedAmount ,0 OutstandingBBLCAmount ,0 FDBPLocalAmount,
-					0 DocumentsUnderCollectionUnpurchasedLoclAmount, CURRENCY_CODE, ConvertFactor, 0 DocNotLodgeYet, 0 TimeLoan, 0 STLWC, 0 OutstandingFLABAmount
-			FROM (
-				SELECT (ExportBillAmount * ConvertFactor)ExportBillAmount,BranchID,ExportBillAmount aa,CustomerCode CustomerID , CURRENCY_CODE, ConvertFactor
-				FROM (
-		           SELECT EBIID,ExportBillAmount,BranchID,CustomerCode ,CURRENCY_CODE 
-				   FROM ExportBillInitiationMaster 
-				   WHERE  IsDeleted = 0 AND IsCancelled = 0 AND ExportBillNo IS NOT NULL AND ExportBillAmount > 0
-				) E 
-				   LEFT JOIN SystemManager..CurrencyLatestRate CLR ON CLR.CurrencyCode = ISNULL(E.CURRENCY_CODE, '') AND CLR.RateFor = 'BC SELLING'
-				   LEFT JOIN (SELECT EBIID FROM PurchaseDiscountForeignDocumentMaster WHERE IsDeleted = 0 AND IsCancelled = 0 AND LoanNumber IS NOT NULL AND DisbursedAmount > 0
-				   GROUP BY EBIID)PDFDM ON PDFDM.EBIID = E.EBIID WHERE PDFDM.EBIID IS NULL
-				)A 
-				WHERE  BranchID = @BranchID AND CustomerID = @CustomerID
-				GROUP BY BranchID,CustomerID, CURRENCY_CODE, ConvertFactor
-
-				--END OF OutstandingNotPurchasedExportBill
-
-			UNION ALL
-			
-			SELECT BranchID,CustomerID,0 ExportBillAmount, 0 UnRealizedValue,0 TotalExportLCSCAmount,0 ClosedAmount,0 BBLCWithTolAmount,0 SavedAndGeneratedBTBBillAmount,
-			       0 OutstandingBTBBillAmount,0 OutstandingSGAmount,0 OutstandingEDFAmount,0 OutstandingPCAmount,
-		           0 FDBPAmount,0 DocumentsUnderCollectionUnpurchasedAmount, 0 BBLCClosedAmount ,0 OutstandingBBLCAmount ,0 FDBPLocalAmount,
-				   0 DocumentsUnderCollectionUnpurchasedLoclAmount, CURRENCY_CODE, ConvertFactor, 0 DocNotLodgeYet, 0 TimeLoan, 0 STLWC, 0 OutstandingFLABAmount
-			FROM (
-				SELECT (ExportLocalBillAmount * ConvertFactor)ExportBillAmount,BranchID,CustomerCode CustomerID, CURRENCY_CODE, ConvertFactor 
-				FROM (
-		           SELECT EBIID,ExportLocalBillAmount,BranchID,CustomerCode ,CURRENCY_CODE 
-				   FROM LocalExportBillInitiationMaster WHERE  IsDeleted = 0 AND IsCancelled = 0 AND ExportLocalBillNo IS NOT NULL AND ExportLocalBillAmount > 0
-				 ) E 
-				   LEFT JOIN SystemManager..CurrencyLatestRate CLR ON CLR.CurrencyCode = ISNULL(E.CURRENCY_CODE, '') AND CLR.RateFor = 'BC SELLING'
-				   LEFT JOIN (SELECT EBIID FROM LDBCPurchase WHERE IsDeleted = 0 AND IsCancelled = 0 AND LoanNumber IS NOT NULL AND DisbursedAmount > 0
-				   GROUP BY EBIID)PDFDM ON PDFDM.EBIID = E.EBIID  WHERE PDFDM.EBIID IS NULL
-				)A 
-				WHERE  BranchID = @BranchID AND CustomerID = @CustomerID 
-				GROUP BY BranchID,CustomerID, CURRENCY_CODE, ConvertFactor
-
-				--END OF OutstandingNotPurchasedExportBill
-
-
-				union all
-
-	--Start Doc Under Collection unpurchased
-		 SELECT E.BranchID, E.CustomerCode CustomerID, 0 ExportBillAmount, 0 UnRealizedValue,0 TotalExportLCSCAmount,0 ClosedAmount,0 BBLCWithTolAmount ,
-					0 SavedAndGeneratedBTBBillAmount, 0 OutstandingBTBBillAmount ,0 OutstandingSGAmount,0 OutstandingEDFAmount,0 OutstandingPCAmount,
-					0 FDBPAmount,SUM(ExportBillAmount) DocumentsUnderCollectionUnpurchasedAmount, 0 BBLCClosedAmount,0 OutstandingBBLCAmount ,0 FDBPLocalAmount,
-					0 DocumentsUnderCollectionUnpurchasedLoclAmount,
-					CURRENCY_CODE, ConvertFactor, 0 DocNotLodgeYet, 0 TimeLoan, 0 STLWC, 0 OutstandingFLABAmount
+	SELECT 
+		@BTBLC_USD = SUM(BBLC_USD),
+		@BBLCOut_BDT = SUM(BBLC_BDT)
+	FROM (
+		SELECT 
+			CASE 
+				WHEN (BBLCTotal - ISNULL(Bill.BillAmount, 0) - ISNULL(SG.Amount, 0) - ISNULL(Closed.CLOSED_VALUE, 0)) > 0
+				THEN ((BBLCTotal - ISNULL(Bill.BillAmount, 0) - ISNULL(SG.Amount, 0) - ISNULL(Closed.CLOSED_VALUE, 0)) * ISNULL(CLR.ConvertFactor, 1)) / @USDRate
+				ELSE 0 
+			END AS BBLC_USD,
+			CASE 
+				WHEN (BBLCTotal - ISNULL(Bill.BillAmount, 0) - ISNULL(SG.Amount, 0) - ISNULL(Closed.CLOSED_VALUE, 0)) > 0
+				THEN ((BBLCTotal - ISNULL(Bill.BillAmount, 0) - ISNULL(SG.Amount, 0) - ISNULL(Closed.CLOSED_VALUE, 0)) * ISNULL(CLR.ConvertFactor, 1))
+				ELSE 0 
+			END AS BBLC_BDT
 		FROM (
-			SELECT EBIID, (ExportBillAmount * ConvertFactor) ExportBillAmount, CustomerCode, BranchID, CURRENCY_CODE, ConvertFactor
-			FROM ExportBillInitiationMaster E 
-					INNER JOIN (
-						SELECT MasterDocID FROM MasterDoc WHERE GroupSysID IS NOT NULL AND IsDeleted = 0 AND IsCancelled = 0
-					) MD ON MD.MasterDocID = E.MasterDocID
-					LEFT JOIN SystemManager..CurrencyLatestRate CLR ON CLR.CurrencyCode = ISNULL(E.CURRENCY_CODE, '') AND CLR.RateFor = 'BC SELLING'
-				WHERE E.IsDeleted = 0 AND ISNULL(E.IsCancelled, 0) = 0 AND ExportBillNo IS NOT NULL AND IsARVAdjusted = 0
-		) E 
-		left join PRSCreationDistributionDetails d on ISNULL(d.BillRefNo, '') = E.EBIID AND d.PRSNCADID != 'NOT_NCA'
-		left join PurchaseDiscountForeignDocumentMaster pm on isnull(pm.EBIID, '') = E.EBIID and isnull(pm.IsExportLoan, 0) = 0 and pm.EBIID is not null
-		WHERE E.BranchID = @BranchID AND E.CustomerCode = @CustomerID AND d.BillRefNo IS NULL and pm.EBIID is null
-		GROUP BY E.BranchID, E.CustomerCode, CURRENCY_CODE, ConvertFactor
-					
+			SELECT 
+				m.BBLCID, m.ExternalID, m.Currency,
+				(m.BBLCAmount + (m.BBLCAmount * ISNULL(m.Toleranace, 0) / 100.0)) AS BBLCTotal,
+				g.BankBranchID, g.CustomerID
+			FROM BBLCMaster m WITH(NOLOCK)
+			INNER JOIN GroupLC g WITH(NOLOCK) ON g.GroupSysID = m.GroupSysID AND g.IsDeleted = 0 AND g.IsClosedGroup = 0
+			WHERE m.IsDeleted = 0 AND m.IsCancelled = 0 AND m.BBLCNo IS NOT NULL
+			  AND g.BankBranchID = @BranchID AND g.CustomerID = @CustomerID
+		) m
+		LEFT JOIN SystemManager..CurrencyLatestRate CLR WITH(NOLOCK) ON CLR.CurrencyCode = m.Currency AND CLR.RateFor = 'BC SELLING'
+		LEFT JOIN (
+			SELECT UBS_CONT_REF_NO, SUM(ISNULL(CLOSED_VALUE, 0)) AS CLOSED_VALUE 
+			FROM ClosureTransaction WITH(NOLOCK) WHERE IsDeleted = 0 GROUP BY UBS_CONT_REF_NO
+		) Closed ON Closed.UBS_CONT_REF_NO = m.ExternalID
+		LEFT JOIN (
+			SELECT BBLCID, SUM(ISNULL(BillAmount, 0)) AS BillAmount 
+			FROM ForeignDocumentAcceptanceMaster WITH(NOLOCK)
+			WHERE IsDeleted = 0 AND IsCancelled = 0 AND BillNo IS NOT NULL
+			GROUP BY BBLCID
+		) Bill ON Bill.BBLCID = m.BBLCID
+		LEFT JOIN (
+			SELECT ImportOrBBLCID, SUM(Amount) AS Amount
+			FROM ShippingGuaranteeMaster sm WITH(NOLOCK)
+			LEFT JOIN ForeignDocumentShippingGuaranteeMap fsm WITH(NOLOCK) ON fsm.SGMID = sm.SGMID AND fsm.IsDeleted = 0 AND fsm.IsCancelled = 0
+			WHERE sm.IsDeleted = 0 AND sm.IsCancelled = 0 AND sm.SGRefNo IS NOT NULL AND fsm.SGMID IS NULL
+			GROUP BY ImportOrBBLCID
+		) SG ON SG.ImportOrBBLCID = m.BBLCID
+	) BBLCOuts;
+
+	SET @BTBLC_USD = ISNULL(@BTBLC_USD, 0);
+	SET @BBLCOut_BDT = ISNULL(@BBLCOut_BDT, 0);
+
+	--------------------------------------------------------------------------------------
+	-- 5. LIABILITIES: BTB BILL Outstanding (Accepted Bills - Payments)
+	--------------------------------------------------------------------------------------
+	DECLARE @BTBBill_USD DECIMAL(18,2) = 0, @BTBBill_BDT DECIMAL(18,2) = 0;
+
+	SELECT 
+		@BTBBill_USD = SUM(BillUSD),
+		@BTBBill_BDT = SUM(BillBDT)
+	FROM (
+		SELECT 
+			(( (ISNULL(FDAM.BillAmount, 0) - ISNULL(FDPM.PaymentAmount, 0)) * ISNULL(CLR.ConvertFactor, 1) ) / @USDRate) AS BillUSD,
+			( (ISNULL(FDAM.BillAmount, 0) - ISNULL(FDPM.PaymentAmount, 0)) * ISNULL(CLR.ConvertFactor, 1) ) AS BillBDT
+		FROM ForeignDocumentAcceptanceMaster FDAM WITH(NOLOCK)
+		INNER JOIN BBLCMaster BBLCM WITH(NOLOCK) ON BBLCM.BBLCID = FDAM.BBLCID AND BBLCM.IsDeleted = 0 AND BBLCM.IsCancelled = 0 AND BBLCM.BBLCNo IS NOT NULL
+		INNER JOIN GroupLC GLC WITH(NOLOCK) ON GLC.GroupSysID = BBLCM.GroupSysID AND GLC.IsDeleted = 0 AND GLC.IsClosedGroup = 0
+		LEFT JOIN SystemManager..CurrencyLatestRate CLR WITH(NOLOCK) ON CLR.CurrencyCode = ISNULL(FDAM.Currency, '') AND CLR.RateFor = 'BC SELLING'
+		LEFT JOIN (
+			SELECT FDAID, SUM(ISNULL(PaymentAmount, 0)) AS PaymentAmount
+			FROM ForeignDocumentPaymentMaster WITH(NOLOCK)
+			WHERE IsDeleted = 0 AND ISNULL(PaymentAmount, 0) > 0
+			GROUP BY FDAID
+		) FDPM ON FDPM.FDAID = FDAM.FDAID
+		WHERE FDAM.IsDeleted = 0 AND FDAM.IsCancelled = 0 AND FDAM.BillNo IS NOT NULL 
+		  AND ISNULL(FDAM.BillAmount, 0) > 0 AND ISNULL(FDAM.IsImportLC, 0) = 0
+		  AND (ISNULL(FDAM.BillAmount, 0) - ISNULL(FDPM.PaymentAmount, 0)) > 0
+		  AND GLC.BankBranchID = @BranchID AND GLC.CustomerID = @CustomerID
+	) BTBBills;
+
+	SET @BTBBill_USD = ISNULL(@BTBBill_USD, 0);
+	SET @BTBBill_BDT = ISNULL(@BTBBill_BDT, 0);
+
+	--------------------------------------------------------------------------------------
+	-- 6. LIABILITIES: EDF Loan Outstanding
+	--------------------------------------------------------------------------------------
+	DECLARE @EDFLoan_USD DECIMAL(18,2) = 0, @EDFLoan_BDT DECIMAL(18,2) = 0;
+
+	SELECT 
+		@EDFLoan_USD = SUM(EDFUSD),
+		@EDFLoan_BDT = SUM(EDFBDT)
+	FROM (
+		SELECT 
+			((ISNULL(L.TOT_OS, L.LoanAmount) * ISNULL(CLR.ConvertFactor, 1)) / @USDRate) AS EDFUSD,
+			(ISNULL(L.TOT_OS, L.LoanAmount) * ISNULL(CLR.ConvertFactor, 1)) AS EDFBDT
+		FROM LoanCreation L WITH(NOLOCK)
+		INNER JOIN BBLCMaster BBLCM WITH(NOLOCK) ON BBLCM.BBLCID = L.BBLCID AND BBLCM.IsDeleted = 0 AND BBLCM.IsCancelled = 0 AND BBLCM.BBLCNo IS NOT NULL
+		LEFT JOIN SystemManager..CurrencyLatestRate CLR WITH(NOLOCK) ON CLR.CurrencyCode = ISNULL(L.LoanCurrency, ISNULL(L.Currency, 'USD')) AND CLR.RateFor = 'BC SELLING'
+		WHERE L.IsDeleted = 0 AND L.Product = 'LEDF' AND L.LoanNo IS NOT NULL
+		  AND L.BankBranchID = @BranchID AND L.Customer = @CustomerID
+	) EDF;
+
+	SET @EDFLoan_USD = ISNULL(@EDFLoan_USD, 0);
+	SET @EDFLoan_BDT = ISNULL(@EDFLoan_BDT, 0);
+
+	--------------------------------------------------------------------------------------
+	-- 7. LIABILITIES: PC Loan Outstanding
+	--------------------------------------------------------------------------------------
+	DECLARE @PC_USD DECIMAL(18,2) = 0;
+
+	SELECT @PC_USD = SUM(PCUSD)
+	FROM (
+		SELECT 
+			CASE 
+				WHEN P.UBSSyncProcessID > 0 THEN P.TOT_OS / @USDRate 
+				ELSE P.PCAmountTK / @USDRate 
+			END AS PCUSD
+		FROM PCDisbursementMaster P WITH(NOLOCK)
+		WHERE P.IsDeleted = 0 AND P.BranchID = @BranchID AND P.CustomerID = @CustomerID
+	) PCD;
+
+	SET @PC_USD = ISNULL(@PC_USD, 0);
+
+	--------------------------------------------------------------------------------------
+	-- 8. LIABILITIES: OD (Others) / Short Term Loan Working Capital
+	--------------------------------------------------------------------------------------
+	DECLARE @ODOthers_USD DECIMAL(18,2) = 0;
+
+	SELECT @ODOthers_USD = SUM(ODUSD)
+	FROM (
+		SELECT 
+			CASE 
+				WHEN P.UBSSyncProcessID > 0 THEN ((P.TOT_OS * ISNULL(CLR.ConvertFactor, 1)) / @USDRate)
+				ELSE ((P.DisbursedAmount * ISNULL(CLR.ConvertFactor, 1)) / @USDRate)
+			END AS ODUSD
+		FROM PurchaseDiscountForeignDocumentMaster P WITH(NOLOCK)
+		LEFT JOIN SystemManager..CurrencyLatestRate CLR WITH(NOLOCK) ON CLR.CurrencyCode = ISNULL(P.AC_CCY, 'BDT') AND CLR.RateFor = 'BC SELLING'
+		WHERE P.IsDeleted = 0 AND P.IsExportLoan = 1 AND P.LoanNumber IS NOT NULL 
+		  AND P.PRODUCT_CODE IN ('STLN', 'STLO', 'OSTL')
+		  AND P.BranchID = @BranchID AND P.CustomerID = @CustomerID
+	) OD;
+
+	SET @ODOthers_USD = ISNULL(@ODOthers_USD, 0);
+
+	--------------------------------------------------------------------------------------
+	-- 9. LIABILITIES: FDBP (Purchased & Discounted Bills)
+	--------------------------------------------------------------------------------------
+	DECLARE @FDBP_USD DECIMAL(18,2) = 0;
+
+	SELECT @FDBP_USD = SUM(FDBPUSD)
+	FROM (
+		-- Foreign FDBP
+		SELECT ((PDFDM.DisbursedAmount * ISNULL(CLR.ConvertFactor, 1)) / @USDRate) AS FDBPUSD
+		FROM (
+			SELECT EBIID, SUM(ISNULL(DisbursedAmount, 0)) AS DisbursedAmount
+			FROM PurchaseDiscountForeignDocumentMaster WITH(NOLOCK)
+			WHERE IsDeleted = 0 AND IsCancelled = 0 AND LoanNumber IS NOT NULL AND ISNULL(IsExportLoan, 0) = 0
+			GROUP BY EBIID
+		) PDFDM
+		INNER JOIN ExportBillInitiationMaster E WITH(NOLOCK) ON E.EBIID = PDFDM.EBIID AND E.IsDeleted = 0 AND ISNULL(E.IsCancelled, 0) = 0
+		LEFT JOIN SystemManager..CurrencyLatestRate CLR WITH(NOLOCK) ON CLR.CurrencyCode = ISNULL(E.CURRENCY_CODE, '') AND CLR.RateFor = 'BC SELLING'
+		WHERE E.BranchID = @BranchID AND E.CustomerCode = @CustomerID
+
 		UNION ALL
 
-			SELECT E.BranchID, E.CustomerCode CustomerID, 0 ExportBillAmount, 0 UnRealizedValue, 0 TotalExportLCSCAmount,0 ClosedAmount,0 BBLCWithTolAmount ,
-					0 SavedAndGeneratedBTBBillAmount, 0 OutstandingBTBBillAmount ,0 OutstandingSGAmount,0 OutstandingEDFAmount,0 OutstandingPCAmount,
-					0 FDBPAmount ,SUM(ExportLocalBillAmount) DocumentsUnderCollectionUnpurchasedAmount, 0 BBLCClosedAmount ,0 OutstandingBBLCAmount ,0 FDBPLocalAmount,
-					0 DocumentsUnderCollectionUnpurchasedLoclAmount,
-					CURRENCY_CODE, ConvertFactor, 0 DocNotLodgeYet, 0 TimeLoan, 0 STLWC, 0 OutstandingFLABAmount
-			FROM (
-				SELECT EBIID,(ExportLocalBillAmount * ConvertFactor)ExportLocalBillAmount,CustomerCode,BranchID, CURRENCY_CODE, ConvertFactor 
-				FROM LocalExportBillInitiationMaster E
-					 INNER JOIN (SELECT MasterDocID FROM MasterDoc WHERE GroupSysID IS NOT NULL AND IsDeleted = 0 AND IsCancelled = 0
-					 ) MD ON MD.MasterDocID = E.MasterDocID
-					LEFT JOIN SystemManager..CurrencyLatestRate CLR ON CLR.CurrencyCode = ISNULL(E.CURRENCY_CODE, '') AND CLR.RateFor = 'BC SELLING'
-					WHERE E.IsDeleted = 0 AND ISNULL(IsCancelled, 0) = 0 AND ExportLocalBillNo IS NOT NULL
-			) E 
-			left join PRSCreationDistributionDetails d on ISNULL(d.BillRefNo, '') = E.EBIID AND d.PRSNCADID != 'NOT_NCA' 
-			left join PurchaseDiscountForeignDocumentMaster pm on isnull(pm.EBIID, '') = E.EBIID and isnull(pm.IsExportLoan, 0) = 0 and pm.EBIID is not null
-		WHERE E.BranchID = @BranchID AND E.CustomerCode = @CustomerID AND d.BillRefNo IS NULL and pm.EBIID is null
-		GROUP BY E.BranchID, E.CustomerCode, CURRENCY_CODE, ConvertFactor 
+		-- Local FDBP
+		SELECT ((PDFDM.DisbursedAmount * ISNULL(CLR.ConvertFactor, 1)) / @USDRate) AS FDBPUSD
+		FROM (
+			SELECT EBIID, SUM(ISNULL(DisbursedAmount, 0)) AS DisbursedAmount
+			FROM LDBCPurchase WITH(NOLOCK)
+			WHERE IsDeleted = 0 AND IsCancelled = 0 AND LoanNumber IS NOT NULL
+			GROUP BY EBIID
+		) PDFDM
+		INNER JOIN LocalExportBillInitiationMaster E WITH(NOLOCK) ON E.EBIID = PDFDM.EBIID AND E.IsDeleted = 0 AND ISNULL(E.IsCancelled, 0) = 0
+		LEFT JOIN SystemManager..CurrencyLatestRate CLR WITH(NOLOCK) ON CLR.CurrencyCode = ISNULL(E.CURRENCY_CODE, '') AND CLR.RateFor = 'BC SELLING'
+		WHERE E.BranchID = @BranchID AND E.CustomerCode = @CustomerID
+	) FDBPTbl;
 
-		--End of Doc Under Collection unpurchsed
+	SET @FDBP_USD = ISNULL(@FDBP_USD, 0);
 
-		) ALLData
-			LEFT JOIN (
-				SELECT DISTINCT CPM.CustomerName+ ' - '+CPM.CIF CustomerName, CPM.CustomerID ,BPB.BranchID 
-				FROM SystemManager..CustomerProfileMaster CPM 
-				INNER JOIN SystemManager..CustomerBranchMap CBM ON CBM.CustomerID = CPM.CustomerID AND CBM.IsDeleted = 0
-				INNER JOIN SystemManager..BankProfileBranch BPB On CBM.BranchID = BPB.BranchID WHERE CPM.IsDeleted = 0)Customer ON Customer.BranchID = ALLData.BranchID AND Customer.CustomerID = ALLData.CustomerID 
-	)A
-		 
-	GROUP BY BranchID,CustomerID,CustomerName
+	--------------------------------------------------------------------------------------
+	-- 10. LIABILITIES: Time Loan
+	--------------------------------------------------------------------------------------
+	DECLARE @TimeLoan_USD DECIMAL(18,2) = 0;
+
+	SELECT @TimeLoan_USD = SUM(TLUSD)
+	FROM (
+		SELECT 
+			CASE 
+				WHEN P.UBSSyncProcessID > 0 THEN ((P.TOT_OS * ISNULL(CLR.ConvertFactor, 1)) / @USDRate)
+				ELSE ((P.DisbursedAmount * ISNULL(CLR.ConvertFactor, 1)) / @USDRate)
+			END AS TLUSD
+		FROM PurchaseDiscountForeignDocumentMaster P WITH(NOLOCK)
+		LEFT JOIN SystemManager..CurrencyLatestRate CLR WITH(NOLOCK) ON CLR.CurrencyCode = ISNULL(P.AC_CCY, 'BDT') AND CLR.RateFor = 'BC SELLING'
+		WHERE P.IsDeleted = 0 AND P.IsExportLoan = 1 AND P.LoanNumber IS NOT NULL 
+		  AND P.PRODUCT_CODE IN ('TMLN', 'OTML')
+		  AND P.BranchID = @BranchID AND P.CustomerID = @CustomerID
+	) TL;
+
+	SET @TimeLoan_USD = ISNULL(@TimeLoan_USD, 0);
+
+	--------------------------------------------------------------------------------------
+	-- 11. LIABILITIES: Forced Loan (FLAB)
+	--------------------------------------------------------------------------------------
+	DECLARE @ForcedLoan_USD DECIMAL(18,2) = 0;
+
+	SELECT @ForcedLoan_USD = SUM(FLABUSD)
+	FROM (
+		SELECT ((ISNULL(L.TOT_OS, L.LoanAmount) * ISNULL(CLR.ConvertFactor, 1)) / @USDRate) AS FLABUSD
+		FROM LoanCreation L WITH(NOLOCK)
+		INNER JOIN BBLCMaster BBLCM WITH(NOLOCK) ON BBLCM.BBLCID = L.BBLCID AND BBLCM.IsDeleted = 0 AND BBLCM.IsCancelled = 0 AND BBLCM.BBLCNo IS NOT NULL
+		LEFT JOIN SystemManager..CurrencyLatestRate CLR WITH(NOLOCK) ON CLR.CurrencyCode = ISNULL(L.LoanCurrency, ISNULL(L.Currency, 'BDT')) AND CLR.RateFor = 'BC SELLING'
+		WHERE L.IsDeleted = 0 AND L.Product = 'FLAB' AND L.LoanNo IS NOT NULL
+		  AND L.BankBranchID = @BranchID AND L.Customer = @CustomerID
+	) FLABTbl;
+
+	SET @ForcedLoan_USD = ISNULL(@ForcedLoan_USD, 0);
+
+	--------------------------------------------------------------------------------------
+	-- 12. CONDITION 4: Next Three Months Accepted Liabilities (BTB Lodgment in Eqv. USD)
+	--------------------------------------------------------------------------------------
+	DECLARE @Next3MonthsAcceptedLiabilities_USD DECIMAL(18,2) = 0;
+
+	SELECT @Next3MonthsAcceptedLiabilities_USD = SUM(Next3LiabUSD)
+	FROM (
+		SELECT ((ISNULL(FDAM.BillAmount, 0) * ISNULL(CLR.ConvertFactor, 1)) / @USDRate) AS Next3LiabUSD
+		FROM ForeignDocumentAcceptanceMaster FDAM WITH(NOLOCK)
+		INNER JOIN BBLCMaster BBLCM WITH(NOLOCK) ON BBLCM.BBLCID = FDAM.BBLCID AND BBLCM.IsDeleted = 0 AND BBLCM.IsCancelled = 0 AND BBLCM.BBLCNo IS NOT NULL
+		INNER JOIN GroupLC GLC WITH(NOLOCK) ON GLC.GroupSysID = BBLCM.GroupSysID AND GLC.IsDeleted = 0 AND GLC.IsClosedGroup = 0
+		LEFT JOIN SystemManager..CurrencyLatestRate CLR WITH(NOLOCK) ON CLR.CurrencyCode = ISNULL(FDAM.Currency, '') AND CLR.RateFor = 'BC SELLING'
+		WHERE FDAM.IsDeleted = 0 AND FDAM.IsCancelled = 0 AND FDAM.BillNo IS NOT NULL
+		  AND FDAM.MATURITY_DATE IS NOT NULL
+		  AND CAST(FDAM.MATURITY_DATE AS DATE) >= CAST(GETDATE() AS DATE)
+		  AND CAST(FDAM.MATURITY_DATE AS DATE) <= DATEADD(MONTH, 3, CAST(GETDATE() AS DATE))
+		  AND GLC.BankBranchID = @BranchID AND GLC.CustomerID = @CustomerID
+	) N3L;
+
+	SET @Next3MonthsAcceptedLiabilities_USD = ISNULL(@Next3MonthsAcceptedLiabilities_USD, 0);
+
+	--------------------------------------------------------------------------------------
+	-- 13. CONDITION 5: Next Three Months Accepted Receivables (Export Bills in Eqv. USD)
+	--------------------------------------------------------------------------------------
+	DECLARE @Next3MonthsAcceptedReceivables_USD DECIMAL(18,2) = 0;
+
+	SELECT @Next3MonthsAcceptedReceivables_USD = SUM(Next3RecvUSD)
+	FROM (
+		-- Foreign Export Bills
+		SELECT ((ISNULL(E.ExportBillAmount, 0) * ISNULL(CLR.ConvertFactor, 1)) / @USDRate) AS Next3RecvUSD
+		FROM ExportBillInitiationMaster E WITH(NOLOCK)
+		INNER JOIN MasterDoc MD WITH(NOLOCK) ON MD.MasterDocID = E.MasterDocID AND MD.IsDeleted = 0 AND MD.IsCancelled = 0
+		INNER JOIN GroupLC GLC WITH(NOLOCK) ON GLC.GroupSysID = MD.GroupSysID AND GLC.IsDeleted = 0 AND GLC.IsClosedGroup = 0
+		LEFT JOIN SystemManager..CurrencyLatestRate CLR WITH(NOLOCK) ON CLR.CurrencyCode = ISNULL(E.CURRENCY_CODE, '') AND CLR.RateFor = 'BC SELLING'
+		WHERE E.IsDeleted = 0 AND ISNULL(E.IsCancelled, 0) = 0 AND E.ExportBillNo IS NOT NULL
+		  AND E.MaturityDate IS NOT NULL
+		  AND CAST(E.MaturityDate AS DATE) >= CAST(GETDATE() AS DATE)
+		  AND CAST(E.MaturityDate AS DATE) <= DATEADD(MONTH, 3, CAST(GETDATE() AS DATE))
+		  AND GLC.BankBranchID = @BranchID AND GLC.CustomerID = @CustomerID
+
+		UNION ALL
+
+		-- Local Export Bills
+		SELECT ((ISNULL(E.ExportLocalBillAmount, 0) * ISNULL(CLR.ConvertFactor, 1)) / @USDRate) AS Next3RecvUSD
+		FROM LocalExportBillInitiationMaster E WITH(NOLOCK)
+		INNER JOIN MasterDoc MD WITH(NOLOCK) ON MD.MasterDocID = E.MasterDocID AND MD.IsDeleted = 0 AND MD.IsCancelled = 0
+		INNER JOIN GroupLC GLC WITH(NOLOCK) ON GLC.GroupSysID = MD.GroupSysID AND GLC.IsDeleted = 0 AND GLC.IsClosedGroup = 0
+		LEFT JOIN SystemManager..CurrencyLatestRate CLR WITH(NOLOCK) ON CLR.CurrencyCode = ISNULL(E.CURRENCY_CODE, '') AND CLR.RateFor = 'BC SELLING'
+		WHERE E.IsDeleted = 0 AND ISNULL(E.IsCancelled, 0) = 0 AND E.ExportLocalBillNo IS NOT NULL
+		  AND E.MaturityDate IS NOT NULL
+		  AND CAST(E.MaturityDate AS DATE) >= CAST(GETDATE() AS DATE)
+		  AND CAST(E.MaturityDate AS DATE) <= DATEADD(MONTH, 3, CAST(GETDATE() AS DATE))
+		  AND GLC.BankBranchID = @BranchID AND GLC.CustomerID = @CustomerID
+	) N3R;
+
+	SET @Next3MonthsAcceptedReceivables_USD = ISNULL(@Next3MonthsAcceptedReceivables_USD, 0);
+
+	--------------------------------------------------------------------------------------
+	-- Subtotals and Totals Calculations
+	--------------------------------------------------------------------------------------
+	-- Table 1: Subtotals and Totals (Eqv. USD)
+	DECLARE @TotalImportLiability_USD DECIMAL(18,2) = @BTBLC_USD + @BTBBill_USD + @EDFLoan_USD;
+	DECLARE @TotalAssets_USD DECIMAL(18,2) = @DocUnderCollection_USD + @ExportLCInHand_USD + @FCHeldBalance_USD;
+	DECLARE @TotalLiabilities_USD DECIMAL(18,2) = @TotalImportLiability_USD + @PC_USD + @ODOthers_USD + @FDBP_USD + @TimeLoan_USD + @ForcedLoan_USD;
+	DECLARE @NetPosition_USD DECIMAL(18,2) = @TotalAssets_USD - @TotalLiabilities_USD;
+
+	-- Table 2: BDT in Million
+	DECLARE @BBLCOuts_M DECIMAL(18,2) = CAST(@BBLCOut_BDT * @Amount2Million AS DECIMAL(18,2));
+	DECLARE @BTBBillOuts_M DECIMAL(18,2) = CAST(@BTBBill_BDT * @Amount2Million AS DECIMAL(18,2));
+	DECLARE @EDFOuts_M DECIMAL(18,2) = CAST(@EDFLoan_BDT * @Amount2Million AS DECIMAL(18,2));
+	DECLARE @TotalImportLiability_M DECIMAL(18,2) = @BBLCOuts_M + @BTBBillOuts_M + @EDFOuts_M;
+	DECLARE @DFCBalance_M DECIMAL(18,2) = CAST(@DFCBalance_BDT * @Amount2Million AS DECIMAL(18,2));
+	DECLARE @DocUnderCollection_M DECIMAL(18,2) = CAST(@DocUnderCollection_BDT * @Amount2Million AS DECIMAL(18,2));
+	DECLARE @Coverage_M DECIMAL(18,2) = @DFCBalance_M + @DocUnderCollection_M;
+
+	--------------------------------------------------------------------------------------
+	-- Final Result Set
+	--------------------------------------------------------------------------------------
+	SELECT
+		@CustomerName AS CustomerName,
+		@BranchID AS BranchID,
+		@CustomerID AS CustomerID,
+
+		-- Table 1: Assets (Eqv. USD)
+		@DocUnderCollection_USD AS DocumentsUnderCollection,
+		@ExportLCInHand_USD AS ExportLC_in_hand_ConfirmedSales_contract_in_hand,
+		@FCHeldBalance_USD AS DFCBalance,
+		@TotalAssets_USD AS TotalAssets,
+
+		-- Table 1: Liabilities (Eqv. USD)
+		@BTBLC_USD AS BBLC,
+		@BTBBill_USD AS ABP,
+		@EDFLoan_USD AS EDF,
+		@TotalImportLiability_USD AS TotalImportLiability,
+		@PC_USD AS PC,
+		@ODOthers_USD AS STLWC,
+		@FDBP_USD AS FDBP,
+		@TimeLoan_USD AS TimeLoan,
+		@ForcedLoan_USD AS FLAB,
+		@TotalLiabilities_USD AS TotalLiabilities,
+
+		-- Table 1: Net Position (Condition 2)
+		@NetPosition_USD AS NetPosition,
+
+		-- Table 2: Summary of BBLC O/S and Coverage Position (BDT in Million)
+		@BBLCOuts_M AS OutstandingBBLCAmount,
+		@BTBBillOuts_M AS ABP_M,
+		@EDFOuts_M AS EDF_M,
+		@TotalImportLiability_M AS TotalImportLiability_M,
+		@DFCBalance_M AS DFCBalance_M,
+		@DocUnderCollection_M AS Documents_under_collection_unpurchased_M,
+		@Coverage_M AS Coverage_M,
+
+		-- Conditions 4 & 5: Next 3 Months Horizon (Eqv. USD)
+		@Next3MonthsAcceptedLiabilities_USD AS Next3MonthsAcceptedLiabilities_USD,
+		@Next3MonthsAcceptedReceivables_USD AS Next3MonthsAcceptedReceivables_USD,
+
+		-- Legacy compatibility aliases
+		@USDRate AS ConvertFactor,
+		'USD' AS CURRENCY_CODE,
+		0 AS DocNotLodgeYet,
+		0 AS DocNotLodgeYet_M,
+		0 AS SG,
+		0 AS SG_M,
+		0 AS FLAB_M,
+		@DocUnderCollection_USD AS Documents_under_collection_unpurchased,
+		0 AS BBLCWithTolAmount,
+		0 AS SavedAndGeneratedBTBBillAmount,
+		0 AS OutstandingSGAmount;
 END
-
+GO
