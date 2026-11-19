@@ -45,7 +45,7 @@
         </Field>
         <Field Name="DFCBalance">
           <DataField>DFCBalance</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="ABP">
           <DataField>ABP</DataField>
@@ -53,15 +53,19 @@
         </Field>
         <Field Name="BBLCWithTolAmount">
           <DataField>BBLCWithTolAmount</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="TotalAssets">
+          <DataField>TotalAssets</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="SG">
           <DataField>SG</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="SavedAndGeneratedBTBBillAmount">
           <DataField>SavedAndGeneratedBTBBillAmount</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="EDF">
           <DataField>EDF</DataField>
@@ -69,6 +73,10 @@
         </Field>
         <Field Name="OutstandingSGAmount">
           <DataField>OutstandingSGAmount</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="TotalImportLiability">
+          <DataField>TotalImportLiability</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="PC">
@@ -89,6 +97,10 @@
         </Field>
         <Field Name="DocNotLodgeYet">
           <DataField>DocNotLodgeYet</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="TotalLiabilities">
+          <DataField>TotalLiabilities</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="Documents_under_collection_unpurchased">
@@ -97,11 +109,15 @@
         </Field>
         <Field Name="SG_M">
           <DataField>SG_M</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="NetPosition">
+          <DataField>NetPosition</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="FLAB_M">
           <DataField>FLAB_M</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="BranchID">
           <DataField>BranchID</DataField>
@@ -111,8 +127,16 @@
           <DataField>EDF_M</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
+        <Field Name="TotalImportLiability_M">
+          <DataField>TotalImportLiability_M</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
         <Field Name="DocNotLodgeYet_M">
           <DataField>DocNotLodgeYet_M</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="DFCBalance_M">
+          <DataField>DFCBalance_M</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="Documents_under_collection_unpurchased_M">
@@ -123,9 +147,17 @@
           <DataField>OutstandingBBLCAmount</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
+        <Field Name="Coverage_M">
+          <DataField>Coverage_M</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
         <Field Name="CURRENCY_CODE">
           <DataField>CURRENCY_CODE</DataField>
           <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Next3MonthsAcceptedLiabilities_USD">
+          <DataField>Next3MonthsAcceptedLiabilities_USD</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="ConvertFactor">
           <DataField>ConvertFactor</DataField>
@@ -135,44 +167,16 @@
           <DataField>TimeLoan</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
+        <Field Name="Next3MonthsAcceptedReceivables_USD">
+          <DataField>Next3MonthsAcceptedReceivables_USD</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
         <Field Name="STLWC">
           <DataField>STLWC</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="FLAB">
           <DataField>FLAB</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="TotalAssets">
-          <DataField>TotalAssets</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="TotalImportLiability">
-          <DataField>TotalImportLiability</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="TotalLiabilities">
-          <DataField>TotalLiabilities</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="NetPosition">
-          <DataField>NetPosition</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="TotalImportLiability_M">
-          <DataField>TotalImportLiability_M</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="Coverage_M">
-          <DataField>Coverage_M</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="Next3MonthsAcceptedLiabilities_USD">
-          <DataField>Next3MonthsAcceptedLiabilities_USD</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="Next3MonthsAcceptedReceivables_USD">
-          <DataField>Next3MonthsAcceptedReceivables_USD</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
       </Fields>
@@ -1015,7 +1019,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>
+                                  <Value xml:space="preserve">
                                   </Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
@@ -1053,7 +1057,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>
+                                  <Value xml:space="preserve">
                                   </Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
@@ -1171,7 +1175,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>
+                                  <Value xml:space="preserve">
                                   </Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
@@ -1209,7 +1213,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>
+                                  <Value xml:space="preserve">
                                   </Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
@@ -1327,7 +1331,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>
+                                  <Value xml:space="preserve">
                                   </Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
@@ -1365,7 +1369,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>
+                                  <Value xml:space="preserve">
                                   </Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
@@ -1483,7 +1487,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>
+                                  <Value xml:space="preserve">
                                   </Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
@@ -1521,7 +1525,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>
+                                  <Value xml:space="preserve">
                                   </Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
@@ -1639,7 +1643,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>
+                                  <Value xml:space="preserve">
                                   </Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
@@ -1677,7 +1681,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>
+                                  <Value xml:space="preserve">
                                   </Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
@@ -1795,7 +1799,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>
+                                  <Value xml:space="preserve">
                                   </Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
@@ -1833,7 +1837,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>
+                                  <Value xml:space="preserve">
                                   </Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
@@ -2181,7 +2185,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>
+                                  <Value xml:space="preserve">
                                   </Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
@@ -2218,7 +2222,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>
+                                  <Value xml:space="preserve">
                                   </Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
@@ -2464,7 +2468,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>
+                                  <Value xml:space="preserve">
                                   </Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
@@ -2501,7 +2505,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>
+                                  <Value xml:space="preserve">
                                   </Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
@@ -2538,7 +2542,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>
+                                  <Value xml:space="preserve">
                                   </Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
@@ -2719,7 +2723,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>
+                                  <Value xml:space="preserve">
                                   </Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
@@ -3155,7 +3159,6 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                                   <Value>4 = 1+2+3</Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
-                                    <FontSize>10pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
@@ -3192,7 +3195,6 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                                   <Value> Total Import Liability</Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
-                                    <FontSize>10pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
@@ -3229,7 +3231,6 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                                   <Value>=Fields!TotalImportLiability_M.Value</Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
-                                    <FontSize>10pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
                                   </Style>
@@ -3506,7 +3507,6 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                                   <Value>7 = 5+6</Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
-                                    <FontSize>10pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
@@ -3543,7 +3543,6 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                                   <Value> Coverage</Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
-                                    <FontSize>10pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
@@ -3580,7 +3579,6 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                                   <Value>=Fields!Coverage_M.Value</Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
-                                    <FontSize>10pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
                                   </Style>
@@ -3620,7 +3618,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>
+                                  <Value xml:space="preserve">
                                   </Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
@@ -3693,7 +3691,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>
+                                  <Value xml:space="preserve">
                                   </Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
