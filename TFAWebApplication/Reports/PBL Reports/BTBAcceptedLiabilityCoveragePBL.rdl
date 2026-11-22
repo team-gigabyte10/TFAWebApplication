@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
@@ -61,7 +61,7 @@
         </Field>
         <Field Name="oDate">
           <DataField>oDate</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
         <Field Name="BTBAcceptedliability">
           <DataField>BTBAcceptedliability</DataField>
@@ -77,11 +77,11 @@
         </Field>
         <Field Name="TotalLiability">
           <DataField>TotalLiability</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="BTBBillsPaidAlready">
           <DataField>BTBBillsPaidAlready</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="JobValue">
           <DataField>JobValue</DataField>
@@ -97,15 +97,15 @@
         </Field>
         <Field Name="ExportToBeMade">
           <DataField>ExportToBeMade</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="Receivables">
           <DataField>Receivables</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="StockInhand">
           <DataField>StockInhand</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="CustomerId">
           <DataField>CustomerId</DataField>
