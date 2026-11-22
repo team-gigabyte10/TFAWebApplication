@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
@@ -15,6 +15,14 @@
     <DataSet Name="DataSet1">
       <Query>
         <DataSourceName>DataSource1</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@FromDate">
+            <Value>=Parameters!FromDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@ToDate">
+            <Value>=Parameters!ToDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
         <CommandText>spRPTBTBBillsPaymentRegister</CommandText>
       </Query>
@@ -643,7 +651,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Negotiating Bank</Value>
+                                  <Value>Document Forwarding Bank</Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
                                     <FontSize>8pt</FontSize>
@@ -680,7 +688,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Nego. B. Bill Ref.</Value>
+                                  <Value>Document Forwarding Bank Ref.</Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
                                     <FontSize>8pt</FontSize>
@@ -1782,7 +1790,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
           </Border>
         </Style>
       </Body>
-      <Width>26.45081in</Width>
+      <Width>26.25601in</Width>
       <Page>
         <PageHeader>
           <Height>0.79236in</Height>
@@ -1810,9 +1818,9 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                 </Paragraph>
               </Paragraphs>
               <Top>0cm</Top>
-              <Left>0.06459in</Left>
+              <Left>0in</Left>
               <Height>0.33611in</Height>
-              <Width>26.38622in</Width>
+              <Width>26.25601in</Width>
               <Style>
                 <Border>
                   <Style>None</Style>
@@ -1840,9 +1848,9 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                 </Paragraph>
               </Paragraphs>
               <Top>0.93134cm</Top>
-              <Left>0.06459in</Left>
+              <Left>0in</Left>
               <Height>0.32152in</Height>
-              <Width>26.38622in</Width>
+              <Width>26.25601in</Width>
               <ZIndex>1</ZIndex>
               <Style>
                 <Border>
@@ -1884,7 +1892,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                 </Paragraph>
               </Paragraphs>
               <Top>0cm</Top>
-              <Left>0.0875in</Left>
+              <Left>0.05in</Left>
               <Height>0.20694in</Height>
               <Width>5.15277in</Width>
               <Style>
@@ -1914,9 +1922,9 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Left>23.12221in</Left>
+              <Left>22.92in</Left>
               <Height>0.21042in</Height>
-              <Width>3.3286in</Width>
+              <Width>3.33in</Width>
               <ZIndex>1</ZIndex>
               <Style>
                 <Border>
@@ -1945,7 +1953,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Left>10in</Left>
+              <Left>9.9in</Left>
               <Height>0.21042in</Height>
               <Width>6.45in</Width>
               <ZIndex>2</ZIndex>
@@ -1972,6 +1980,16 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="FromDate">
+      <DataType>DateTime</DataType>
+      <Prompt>From Date</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="ToDate">
+      <DataType>DateTime</DataType>
+      <Prompt>To Date</Prompt>
+    </ReportParameter>
+  </ReportParameters>
   <rd:ReportUnitType>Inch</rd:ReportUnitType>
   <rd:ReportID>fd42c46e-954d-49d2-bf35-cb8c60967ca5</rd:ReportID>
 </Report>
