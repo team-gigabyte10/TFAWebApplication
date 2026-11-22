@@ -274,7 +274,7 @@ Select distinct  ADbpb.BranchName AS ADBranchName	,
 	IssueBranch=issueBranch.Name,	
 	CustomerNonCustomer=Case when lcar.IsCustomerLC=1 then 'Customer' else 'Non-Customer' end,	Benificiary=Beni.Name,	
 	CustomerID=CPM.CIF,	
-	CustomerType=CusType.Description,	
+	CustomerType=COALESCE(NULLIF(Seg.DisplayCode, ''), NULLIF(Seg.Description, ''), NULLIF(CPM.BusinessUnit, ''), CusType.Description, Case when lcar.IsCustomerLC=1 then 'Customer' else 'Non-Customer' end),	
 	Applicant=Applicant.Name,	
 	ApplicantsCountry=ApplicantCountry.CountryName,	
 	JobNumber=null,	
@@ -400,6 +400,7 @@ LEFT JOIN ( SELECT B.BranchID ,B.BranchName from SystemManager..BankProfileBranc
 	LEFT JOIN (select * from SystemManager..BankProfileBranch WHERE IsADCode = 1) ADbpb   on  ADbpb.ADBranchID = LCAR.ADBranchID
 LEFT JOIN SystemManager..EntityFixedVariables LCTYPE  with(nolock) on  LCTYPE.EntityID = LCAR.LCTypeID
 LEFT JOIN SystemManager..EntityFixedVariables CusType  with(nolock) on  CusType.EntityID = LCAR.CustomerType
+LEFT JOIN SystemManager..EntityFixedVariables Seg with(nolock) on Seg.EntityID = CPM.SegmentID and Seg.EntityTypeID = 'CSEG/17/1' and Seg.IsDeleted = 0
 LEFT JOIN SystemManager..EntityFixedVariables SubLC  with(nolock) on  SubLC.EntityID = LCAR.LCSubTypeID
 LEFT JOIN [SystemManager]..CurrencyLatestRate clr  with(nolock) on clr.CurrencyCode=lcar.Currency and clr.RateFor='BC SELLING'
 LEFT JOIN SystemManager..t_Employee RM with(nolock) ON RM.EmployeeCode = CPM.RMID
