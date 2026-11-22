@@ -1,6 +1,6 @@
 USE [EFA]
 GO
-/****** Object:  StoredProcedure [dbo].[SP_RPT_LoanRegisterPBL]    Script Date: 11/22/2026 11:30:00 AM ******/
+/****** Object:  StoredProcedure [dbo].[SP_RPT_LoanRegisterPBL]    Script Date: 11/22/2026 11:40:00 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -23,14 +23,14 @@ BEGIN
 		SELECT 
 			LoanKey,
 			MAX(NULLIF(INTEREST_RATE, 0)) AS INTEREST_RATE,
-			MAX(NULLIF(RateOnInterest, 0)) AS RateOnInterest,
+			MAX(NULLIF(INT_OS, 0)) AS INT_OS,
 			MAX(MATURITY_DATE) AS MATURITY_DATE,
 			MAX(LoanExpiry) AS LoanExpiry
 		FROM (
 			SELECT 
 				COALESCE(NULLIF(LoanNo, ''), NULLIF(AdditionalFilter, ''), NULLIF(ExternalID, ''), ACCOUNT_NUMBER) AS LoanKey,
 				INTEREST_RATE,
-				RateOnInterest,
+				INT_OS,
 				MATURITY_DATE,
 				LoanExpiry
 			FROM LoanCreation WITH(NOLOCK)
@@ -91,7 +91,7 @@ BEGIN
 		),
 		Currency = COALESCE(NULLIF(L.LoanCurrency, ''), NULLIF(L.Currency, ''), NULLIF(md.Currency, ''), NULLIF(FDAM.Currency, ''), NULLIF(IML.Currency, ''), 'BDT'),
 		DisbursementAmount = COALESCE(NULLIF(L.LoanAmount, 0), NULLIF(L.BillAmount, 0), NULLIF(L.PRINCIPAL_OS, 0), NULLIF(md.BBLCAmount, 0), NULLIF(FDAM.BillAmount, 0), 0),
-		RateofInterest = COALESCE(NULLIF(L.INTEREST_RATE, 0), NULLIF(L.RateOnInterest, 0), NULLIF(L.PENAL_IN, 0)),
+		RateofInterest = COALESCE(NULLIF(L.INTEREST_RATE, 0), NULLIF(L.INT_OS, 0), NULLIF(L.PENAL_IN, 0)),
 		PresentOutstanding = CASE 
 			WHEN l.UBSSyncProcessID = 0 THEN l.LoanAmount 
 			WHEN l.UBSSyncProcessID = 1 AND l.AdjustmentAmount = 0 THEN l.LoanAmount
@@ -408,7 +408,7 @@ BEGIN
 		),
 		Currency = COALESCE(NULLIF(L.Currency, ''), 'BDT'),
 		DisbursementAmount = COALESCE(NULLIF(L.PCAmountTK, 0), NULLIF(L.PCAmount, 0), NULLIF(L.PRINCIPAL_OS, 0), 0),
-		RateofInterest = COALESCE(NULLIF(L.InterestRate, 0), NULLIF(LC.INTEREST_RATE, 0), NULLIF(LC.RateOnInterest, 0), NULLIF(L.PCorSODInterestAmount, 0), NULLIF(L.INT_OS, 0)),
+		RateofInterest = COALESCE(NULLIF(L.InterestRate, 0), NULLIF(LC.INTEREST_RATE, 0), NULLIF(LC.INT_OS, 0), NULLIF(L.PCorSODInterestAmount, 0), NULLIF(L.INT_OS, 0)),
 		PresentOutstanding = CASE 
 			WHEN L.TransactionDate IS NULL THEN L.PCAmountTK                      
 			ELSE L.TOT_OS 
@@ -486,8 +486,8 @@ BEGIN
 				ELSE L.Loannumber 
 			END
 		),
-		Currency = COALESCE(NULLIF(L.CurrencyCode, ''), NULLIF(md.Currency, ''), NULLIF(localb.Currency, ''), 'BDT'),
-		DisbursementAmount = COALESCE(NULLIF(L.DisbursedAmount, 0), NULLIF(L.EligibleAmount, 0), NULLIF(L.LimitAmount, 0), NULLIF(localb.BillAmount, 0), 0),
+		Currency = COALESCE(NULLIF(L.CurrencyCode, ''), NULLIF(md.Currency, ''), NULLIF(localb.CURRENCY_CODE, ''), NULLIF(localb.BILL_CCY, ''), 'BDT'),
+		DisbursementAmount = COALESCE(NULLIF(L.DisbursedAmount, 0), NULLIF(L.EligibleAmount, 0), NULLIF(L.LimitAmount, 0), NULLIF(localb.ExportLocalBillAmount, 0), 0),
 		RateofInterest = COALESCE(NULLIF(L.INTEREST_RATE, 0), NULLIF(L.InterestPercent, 0), NULLIF(L.INT_OS, 0)),
 		PresentOutstanding = CASE 
 			WHEN l.UBSSyncProcessID = 0 THEN l.DisbursedAmount 
