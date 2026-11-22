@@ -378,8 +378,8 @@ BEGIN
 				ELSE 0 
 			END AS DECIMAL(18, 2)
 		) AS EquivalentRealizationAmountInUSD,
-		COALESCE(NULLIF(LEB.AddedBy, ''), NULLIF(LEB.MakeBy, ''), NULLIF(PRSM.AddedBy, ''), '') AS Inputter,
-		COALESCE(NULLIF(LEB.CheckBy, ''), NULLIF(PRSM.CheckBy, ''), '') AS Authorizer,
+		COALESCE(NULLIF(LEB.AddedBy, ''), NULLIF(LEB.MakeBy, ''), '') AS Inputter,
+		COALESCE(NULLIF(LEB.CheckBy, ''), '') AS Authorizer,
 		CAST(
 			CASE 
 				WHEN @USDRate > 0 
@@ -479,8 +479,6 @@ BEGIN
 				SUM(M.ProceedsRecvd) AS RealizationAmount, 
 				MAX(M.Currency) AS Currency,
 				MAX(M.ExchangeRate) AS ExchangeRate,
-				MAX(M.AddedBy) AS AddedBy,
-				MAX(M.CheckBy) AS CheckBy,
 				MAX(CAST(M.IsReversedFromCBS AS INT)) AS IsReversed,
 				MAX(M.ExternalID) AS ExternalID,
 				MAX(M.CBSTransactionResponseRef) AS CBSTransactionResponseRef
@@ -492,8 +490,6 @@ BEGIN
 					ProceedsRecvd, 
 					Currency, 
 					ExchangeRate, 
-					AddedBy, 
-					CheckBy, 
 					IsReversedFromCBS,
 					ExternalID,
 					CBSTransactionResponseRef
