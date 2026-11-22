@@ -14,40 +14,11 @@ Update SystemManager..ReportSuite Set IsVisible = 0 Where ReportId = 1213;
 
 Update SystemManager..ReportSuite Set IsVisible = 0 Where ReportId = 503;
 
---5. PC Calculation
+--5. Import Bill Lodgment Register
 
-INSERT INTO [SystemManager].[dbo].[ReportSuite] (
-    [ReportId],
-    [ApplicationId],
-    [ParentId],
-    [DisplayName],
-    [ReportName],
-    [ReportPath],
-    [ConName],
-    [SeqNo],
-    [IsVisible]
-)
-VALUES (1218, 2, 380, 'PC Calculation', 'PCCalculationPBL.rdl', '\\Reports\Transaction\', 'OTS', 5, 1);
-
-INSERT INTO [SystemManager].[dbo].[ReportSuiteField] (
-    [ReportFieldId],
-    [ReportId],
-    [ValueField],
-    [LabelField],
-    [Label],
-    [DefaultValue],
-    [FieldType],
-    [MapField],
-    [IsSysParameter],
-    [ReferenceSource],
-    [Operators],
-    [FilterOnly],
-    [SeqNo],
-    [MultiSelect]
-)
-
-VALUES (1341, 1218, 'FromDate',     'FromDate',     'From Date',   NULL, 'DateTime', NULL, 0, NULL, NULL, 0, 1, 0),
-       (1342, 1218, 'ToDate',       'ToDate',       'To Date',     NULL, 'DateTime', NULL, 0, NULL, NULL, 0, 2, 0),
-       (1343, 1218, 'BranchID', 'BranchName', 'Bank Branch', NULL, 'String',   NULL, 0, 'SELECT DISTINCT BPB.BranchID, BPB.BranchName FROM [SystemManager]..[BankProfileBranch] BPB WITH(NOLOCK) WHERE BPB.IsDeleted = 0 ORDER BY BPB.BranchName ASC', NULL, 0, 3, 0), 
-       (1344, 1218, 'CustomerID',       'CustomerName',       ' Customer Name',   NULL, 'String',   NULL, 0, 'SELECT DISTINCT CPM.CustomerName + '' - '' + CPM.CIF AS CustomerName, CPM.CustomerID FROM SystemManager..CustomerProfileMaster CPM WHERE CPM.IsDeleted = 0', NULL, 0, 4, 0);
-
+UPDATE SystemManager..ReportSuiteField
+SET Label = CASE
+    WHEN ReportFieldId = 1216457 THEN 'From Bill Generation Date'
+    WHEN ReportFieldId = 1216458 THEN 'To Bill Generation Date'
+END
+WHERE ReportFieldId IN (1216457, 1216458);
