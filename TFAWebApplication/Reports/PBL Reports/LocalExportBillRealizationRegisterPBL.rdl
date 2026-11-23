@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
@@ -230,7 +230,7 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
         </Field>
         <Field Name="EchangeRateAppliedOnRealizaiton">
           <DataField>EchangeRateAppliedOnRealizaiton</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="LBCNo">
           <DataField>LBCNo</DataField>
@@ -3205,13 +3205,13 @@ FROM            SystemManager.dbo.Company_Entity</CommandText>
                                     <FontStyle>Normal</FontStyle>
                                     <FontFamily>Calibri</FontFamily>
                                     <FontSize>8pt</FontSize>
-                                    <Format>n2</Format>
+                                    <Format>dd-MMM-yy</Format>
                                     <TextDecoration>None</TextDecoration>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Left</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
