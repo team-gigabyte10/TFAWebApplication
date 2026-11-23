@@ -1,6 +1,6 @@
-USE [EFA]
+﻿USE [EFA]
 GO
-/****** Object:  StoredProcedure [dbo].[spIDBCRegisterExportOutstandingPBL]    Script Date: 11/10/2026 ******/
+/****** Object:  StoredProcedure [dbo].[spIDBCRegisterExportOutstandingPBL]    Script Date: 11/23/2026 5:25:00 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8,7 +8,8 @@ GO
 
 ALTER PROC [dbo].[spIDBCRegisterExportOutstandingPBL] 
 	@FromDate DATE, 
-	@ToDate DATE
+	@ToDate DATE,
+	@BranchID VARCHAR(50) = NULL
 AS
 	-- spIDBCRegisterExportOutstandingPBL '2024-08-01','2025-03-03'
 BEGIN  
@@ -31,16 +32,37 @@ BEGIN
 			NULLIF(BPB_G.BranchName, ''),
 			''
 		) AS BranchName,
-		CPM.CIF AS CustomerID,
-		ISNULL(CPM.CustomerName, '') AS CustomerName,
+		COALESCE(
+			NULLIF(CPM.CIF, ''), 
+			NULLIF(CPM_MD.CIF, ''),
+			NULLIF(LEB.CustomerCode, ''), 
+			NULLIF(MD.CustomerID, ''), 
+			NULLIF(G.CustomerID, ''), 
+			NULLIF(CPM.CustomerID, ''), 
+			''
+		) AS CustomerID,
+		COALESCE(
+			NULLIF(CPM.CustomerName, ''), 
+			NULLIF(CPM_MD.CustomerName, ''), 
+			NULLIF(CPM_G.CustomerName, ''),
+			''
+		) AS CustomerName,
 		COALESCE(
 			NULLIF(cus.DisplayCode, ''), 
-			CASE WHEN ISNULL(CPM.IsUsed, 0) = 1 THEN 'EPZ' ELSE 'Non-EPZ' END
+			CASE WHEN ISNULL(CPM.IsUsed, ISNULL(CPM_MD.IsUsed, 0)) = 1 THEN 'EPZ' ELSE 'Non-EPZ' END
 		) AS CustomerType,
 		COALESCE(
 			NULLIF(LEB.ExternalID, ''), 
-			NULLIF(MD.ExternalID, ''), 
+			NULLIF(LEB.CBSRefNo, ''), 
+			NULLIF(LEB.RPA_REFERENCE_NO, ''),  
 			NULLIF(LEB.REFERENCE_LC_COLL, ''), 
+			NULLIF(LEB.TransferringBankReferenceNumber, ''), 
+			NULLIF(MD.ExternalID, ''), 
+			NULLIF(MD.TransferringBankReferenceNumber, ''), 
+			NULLIF(Advi.ExternalId, ''), 
+			NULLIF(Advi.RReference, ''), 
+			NULLIF(EBM.OtherMessageID, ''), 
+			NULLIF(PUR.LoanNumber, ''), 
 			NULLIF(LEB.AdditionalFilter, ''), 
 			NULLIF(LEB.ExportLocalBillNo, ''), 
 			''
@@ -63,18 +85,29 @@ BEGIN
 		MD.LCNo AS LCNumber,
 		MD.IssueDate AS LCDate,
 		ISNULL(MD.LCAmount, 0) AS LCValue,
-		COALESCE(NULLIF(Applicant.Name, ''), NULLIF(LEBApplicant.Name, ''), '') AS BuyersName,
+		COALESCE(
+			NULLIF(Applicant.Name, ''), 
+			NULLIF(LEBApplicant.Name, ''), 
+			NULLIF(AdviApplicant.Name, ''), 
+			''
+		) AS BuyersName,
 		COALESCE(
 			NULLIF(Issue.Name, ''), 
 			NULLIF(OpenBank.Name, ''), 
 			NULLIF(LEBIssueBank.Name, ''), 
-			NULLIF(DocSendBank.Name, ''), 
+			NULLIF(DocSendBank.Name, ''),  
+			NULLIF(Issue.ShortName, ''), 
+			NULLIF(OpenBank.ShortName, ''), 
+			NULLIF(LEBIssueBank.ShortName, ''), 
+			NULLIF(DocSendBank.ShortName, ''), 
 			''
 		) AS IssuingBank,
 		COALESCE(
 			NULLIF(IssueBranch.Name, ''), 
 			NULLIF(DocSendBranch.Name, ''), 
-			NULLIF(OpenBankBranch.Name, ''), 
+			NULLIF(OpenBankBranch.Name, ''),  
+			NULLIF(IssueBranch.ShortName, ''), 
+			NULLIF(OpenBankBranch.ShortName, ''), 
 			''
 		) AS IssuingBranch,
 		ISNULL(G.GroupRefNo, '') AS JobNumber,
@@ -122,9 +155,16 @@ BEGIN
 			NULLIF(DocSendBranch.AgentName, ''), 
 			NULLIF(OpenBankBranch.AgentName, ''), 
 			NULLIF(OpenBank.AgentName, ''), 
+			NULLIF(Issue.AgentName, ''), 
 			''
 		) AS IssuingBankADCode,
-		'' AS BangladeshBankAcceptanceID,
+		COALESCE(
+			NULLIF(LEB.TransferringBankReferenceNumber, ''), 
+			NULLIF(EBM.OtherMessageID, ''), 
+			NULLIF(LEB.CBSRefNo, ''), 
+			NULLIF(LEB.RPA_REFERENCE_NO, ''), 
+			''
+		) AS BangladeshBankAcceptanceID,
 		ISNULL(ten.DisplayCode, '') AS LCTypeSightorDeferred,
 		ISNULL(MD.Tenor, 0) AS Tenor,
 		ISNULL(FORMAT(COALESCE(LEB.BASE_DATE, Advi.DeliveryDate, EBM.AcceptanceReceivedOnDate, LEB.DateOfBillAccepted, LEB.DocReceiveDate), 'dd-MMM-yyyy'), '') AS AcceptanceCalculationBasisDate,
@@ -136,7 +176,12 @@ BEGIN
 			ELSE 'Regular'
 		END AS ReversalStatus,
 		CASE WHEN PUR.EBIID IS NOT NULL THEN 'Purchased' ELSE '' END AS PurchaseStatus,
-		ISNULL(PUR.LoanNumber, '') AS LoanIDLDNumber,
+		COALESCE(
+			NULLIF(PUR.LoanNumber, ''),  
+			NULLIF(LEB.ExternalID, ''), 
+			NULLIF(LEB.ExportLocalBillNo, ''), 
+			''
+		) AS LoanIDLDNumber,
 		COALESCE(
 			NULLIF(LEB.AddedBy, ''), 
 			NULLIF(PUR.AddedBy, ''), 
@@ -172,8 +217,16 @@ BEGIN
 				AND CHARINDEX('/', ADbpb.BranchID) > 0
 				AND RIGHT(LEB.ADBranchID, CHARINDEX('/', REVERSE(LEB.ADBranchID) + '/') - 1) = RIGHT(ADbpb.BranchID, CHARINDEX('/', REVERSE(ADbpb.BranchID) + '/') - 1)
 			)
-		LEFT JOIN SystemManager..CustomerProfileMaster CPM WITH(NOLOCK) ON CPM.CustomerID = LEB.CustomerCode
-		LEFT JOIN MasterDoc MD WITH(NOLOCK) ON MD.MasterDocID = LEB.MasterDocID
+		LEFT JOIN MasterDoc MD WITH(NOLOCK) ON 
+			MD.MasterDocID = LEB.MasterDocID
+			OR (NULLIF(LEB.REFERENCE_LC_COLL, '') IS NOT NULL AND MD.LCNo = LEB.REFERENCE_LC_COLL AND MD.IsDeleted = 0)
+			OR (NULLIF(LEB.ExportLocalBillNo, '') IS NOT NULL AND MD.LCNo = LEB.ExportLocalBillNo AND MD.IsDeleted = 0)
+		LEFT JOIN SystemManager..CustomerProfileMaster CPM WITH(NOLOCK) ON 
+			CPM.CustomerID = COALESCE(NULLIF(LEB.CustomerCode, ''), NULLIF(MD.CustomerID, ''))
+			OR CPM.CIF = COALESCE(NULLIF(LEB.CustomerCode, ''), NULLIF(MD.CustomerID, ''))
+		LEFT JOIN SystemManager..CustomerProfileMaster CPM_MD WITH(NOLOCK) ON 
+			CPM_MD.CustomerID = MD.CustomerID
+			OR CPM_MD.CIF = MD.CustomerID
 		LEFT JOIN SystemManager..BankProfileBranch BPB_MD WITH(NOLOCK) ON 
 			BPB_MD.BranchID = MD.BranchID
 			OR BPB_MD.BranchID = REPLACE(MD.BranchID, 'BPB/22/', 'OBPB/25/')
@@ -191,6 +244,7 @@ BEGIN
 				AND RIGHT(MD.ADBranchID, CHARINDEX('/', REVERSE(MD.ADBranchID) + '/') - 1) = RIGHT(ADbpb_MD.BranchID, CHARINDEX('/', REVERSE(ADbpb_MD.BranchID) + '/') - 1)
 			)
 		LEFT JOIN GroupLC G WITH(NOLOCK) ON G.GroupSysID = MD.GroupSysID
+		LEFT JOIN SystemManager..CustomerProfileMaster CPM_G WITH(NOLOCK) ON CPM_G.CustomerID = G.CustomerID
 		LEFT JOIN SystemManager..BankProfileBranch BPB_G WITH(NOLOCK) ON 
 			BPB_G.BranchID = G.ADBranchID
 			OR BPB_G.BranchID = REPLACE(G.ADBranchID, 'BPB/22/', 'OBPB/25/')
@@ -199,7 +253,11 @@ BEGIN
 				AND CHARINDEX('/', BPB_G.BranchID) > 0
 				AND RIGHT(G.ADBranchID, CHARINDEX('/', REVERSE(G.ADBranchID) + '/') - 1) = RIGHT(BPB_G.BranchID, CHARINDEX('/', REVERSE(BPB_G.BranchID) + '/') - 1)
 			)
-		LEFT JOIN LCAdvisingRegister Advi WITH(NOLOCK) ON Advi.LCReceiveID = COALESCE(NULLIF(MD.LCReceiveID, ''), NULLIF(LEB.MasterDocID, ''), NULLIF(MD.MasterDocID, ''))
+		LEFT JOIN LCAdvisingRegister Advi WITH(NOLOCK) ON 
+			Advi.LCReceiveID = MD.LCReceiveID 
+			OR (NULLIF(MD.LCNo, '') IS NOT NULL AND Advi.LCNumber = MD.LCNo AND Advi.IsDeleted = 0)
+			OR (NULLIF(LEB.REFERENCE_LC_COLL, '') IS NOT NULL AND Advi.LCNumber = LEB.REFERENCE_LC_COLL AND Advi.IsDeleted = 0)
+			OR (NULLIF(LEB.ExportLocalBillNo, '') IS NOT NULL AND Advi.LCNumber = LEB.ExportLocalBillNo AND Advi.IsDeleted = 0)
 		LEFT JOIN SystemManager..EntityFixedVariables cus WITH(NOLOCK) ON cus.EntityID = Advi.CustomerType
 		LEFT JOIN SystemManager..EntityFixedVariables ten WITH(NOLOCK) ON ten.EntityID = MD.TenorType
 		LEFT JOIN SystemManager..Contacts Issue WITH(NOLOCK) ON Issue.Code = Advi.BankID
@@ -207,10 +265,11 @@ BEGIN
 		LEFT JOIN SystemManager..Contacts OpenBank WITH(NOLOCK) ON OpenBank.Code = MD.OpeningBankCode
 		LEFT JOIN SystemManager..Contacts OpenBankBranch WITH(NOLOCK) ON OpenBankBranch.Code = MD.OpeningBankBranchID
 		LEFT JOIN SystemManager..Contacts LEBIssueBank WITH(NOLOCK) ON LEBIssueBank.Code = LEB.IssueingBankCode
-		LEFT JOIN SystemManager..Contacts DocSendBank WITH(NOLOCK) ON DocSendBank.Code = COALESCE(LEB.DocSendToBank, LEB.DocumentSendingBank)
+		LEFT JOIN SystemManager..Contacts DocSendBank WITH(NOLOCK) ON DocSendBank.Code = COALESCE(NULLIF(LEB.DocSendToBank, ''), NULLIF(LEB.DocumentSendingBank, ''))
 		LEFT JOIN SystemManager..Contacts DocSendBranch WITH(NOLOCK) ON DocSendBranch.Code = LEB.DocumentSendingBranch
 		LEFT JOIN SystemManager..Contacts Applicant WITH(NOLOCK) ON Applicant.Code = MD.Applicant
 		LEFT JOIN SystemManager..Contacts LEBApplicant WITH(NOLOCK) ON LEBApplicant.Code = LEB.ApplicantID
+		LEFT JOIN SystemManager..Contacts AdviApplicant WITH(NOLOCK) ON AdviApplicant.Code = Advi.Applicant
 		LEFT JOIN ExportBillMonitoring EBM WITH(NOLOCK) ON EBM.EBIID = LEB.EBIID AND EBM.IsDeleted = 0
 		LEFT JOIN SystemManager..CurrencyLatestRate CLR WITH(NOLOCK) ON CLR.CurrencyCode = LEB.CURRENCY_CODE AND CLR.RateFor = 'BC SELLING'
 		LEFT JOIN SystemManager..CommodityMaster Commo WITH(NOLOCK) ON Commo.CommodityMasterID = MD.Commodity
@@ -257,6 +316,23 @@ BEGIN
 		AND ISNULL(LEB.IsCancelled, 0) = 0 
 		AND LEB.ExportLocalBillNo IS NOT NULL 
 		AND PRSM.BillRefNo IS NULL
+		AND (
+			@BranchID IS NULL 
+			OR @BranchID = ''
+			OR LEB.BranchID = @BranchID 
+			OR LEB.ADBranchID = @BranchID
+			OR MD.BranchID = @BranchID 
+			OR MD.ADBranchID = @BranchID
+			OR BPB.BranchID = @BranchID
+			OR ADbpb.BranchID = @BranchID
+			OR BPB_MD.BranchID = @BranchID
+			OR ADbpb_MD.BranchID = @BranchID
+			OR BPB_G.BranchID = @BranchID
+			OR RIGHT(LEB.BranchID, CHARINDEX('/', REVERSE(LEB.BranchID) + '/') - 1) = RIGHT(@BranchID, CHARINDEX('/', REVERSE(@BranchID) + '/') - 1)
+			OR RIGHT(LEB.ADBranchID, CHARINDEX('/', REVERSE(LEB.ADBranchID) + '/') - 1) = RIGHT(@BranchID, CHARINDEX('/', REVERSE(@BranchID) + '/') - 1)
+			OR RIGHT(BPB.BranchID, CHARINDEX('/', REVERSE(BPB.BranchID) + '/') - 1) = RIGHT(@BranchID, CHARINDEX('/', REVERSE(@BranchID) + '/') - 1)
+			OR RIGHT(ADbpb.BranchID, CHARINDEX('/', REVERSE(ADbpb.BranchID) + '/') - 1) = RIGHT(@BranchID, CHARINDEX('/', REVERSE(@BranchID) + '/') - 1)
+		)
 		AND CONVERT(DATE, COALESCE(LEB.BillGenerationDate, LEB.DocReceiveDate, LEB.DateAdded)) BETWEEN @FromDate AND @ToDate;
 END
 GO

@@ -16,7 +16,7 @@ Update SystemManager..ReportSuite Set IsVisible = 0 Where ReportId = 503;
 
 
 
-			-- 22/11/2026
+-- 23/11/2026
 
 --1. Import Bill Lodgment Register
 UPDATE SystemManager..ReportSuiteField
