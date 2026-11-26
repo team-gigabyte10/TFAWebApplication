@@ -43,6 +43,12 @@
           <QueryParameter Name="@AsOnDate">
             <Value>=Parameters!AsOnDate.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@CustomerID">
+            <Value>=Parameters!CustomerID.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@BranchID">
+            <Value>=Parameters!BranchID.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
         <CommandText>spCustomerWiseBTBLCAcceptedBillsEDFLoanOutstandingMBL</CommandText>
@@ -1609,6 +1615,14 @@
                         <Format>dd-MMM-yy</Format>
                       </Style>
                     </TextRun>
+                    <TextRun>
+                      <Value>=IIf(String.IsNullOrEmpty(First(Fields!CustomerName.Value, "DataSet1")), "", "    |    Customer: " &amp; First(Fields!CustomerName.Value, "DataSet1")) &amp; IIf(String.IsNullOrEmpty(First(Fields!BranchName.Value, "DataSet1")), "", "    |    Branch: " &amp; First(Fields!BranchName.Value, "DataSet1"))</Value>
+                      <Style>
+                        <FontFamily>Calibri</FontFamily>
+                        <FontSize>12pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                      </Style>
+                    </TextRun>
                   </TextRuns>
                   <Style>
                     <TextAlign>Left</TextAlign>
@@ -1733,6 +1747,18 @@
     <ReportParameter Name="AsOnDate">
       <DataType>DateTime</DataType>
       <Prompt>As On Date</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="CustomerID">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>Customer ID</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="BranchID">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>Branch ID</Prompt>
     </ReportParameter>
   </ReportParameters>
   <rd:ReportUnitType>Inch</rd:ReportUnitType>
